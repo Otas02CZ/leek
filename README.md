@@ -1,14 +1,31 @@
 # leek
 Leek (pórek) je jednoduchý konzolový správce souborů ovládaný krátkými příkazy, jakožto každý správce souborů umí zobrazovat soubory, složky a základní informace o nich, veškeré zobrazování se děje na tabulkových listech, jejichž velikost si můžete sami upravit. Zároveň můžete volně mezi těmito listy přecházet. Soubory, disky a složky voláte dle jejich zobrazovaného ID. Leek je schopen volně přecházet mezi disky, vracet se zpět na root disku i na root celku. Zobrazení můžete kdykoli aktualizovat. Součástí leek je i jednoduché sledování chyb a úspěšných operací, které uživateli umožní se jednoduše vyznat ve výsledcích zadaných příkazů. V leeku si můžete poznačovat soubory pro budoucí práci s nimi, soubory poznačené si také můžete nechat zobrazit, nebo je odoznačovat. Leek samozřejmě umí soubory a složky přesouvat," přejmenovávat, kopírovat, kopírovat a přejmenovávat, mazat, vyhledávat v nich a zobrazení různě seřazovat. Leek využívá Python verze 3.10 a knihovnu rich 11.2, minimální verzí operačního systému Windows je Win 8.
 
-    textik = " - [bold blue]select [číslo/čísla oddělená mezerou/rozsah (tento parametr je volitelný)][/bold blue]\n - - Odoznačí aktuální poznačené a poznačí si výběr, k označení se používá ID položek v aktuální lokaci, příklady parametrů ->\n - - - select |-> bez parametru označí všechny položky v aktualním adresáři\n"
-    textik+= " - - - select 1 |-> označí položku s ID 1\n - - - select 1 2 3 7 8 9 |-> označí položky s napsanými ID\n - - - select 1 - 15 |-> označí položky z daného rozsahu\n - - Veškeré duplicitní záznamy se ignorují, chybné a neexistující výběry zobrazí chybu.\n"
-    textik+= " - [bold blue]add [číslo/čísla oddělená mezerou/rozsah (tento parametr je volitelný)][/bold blue]\n - - Přidá k označeným vybrané, k označení se používá ID položek v aktuální lokaci, příklady parametrů ->\n - - - add |-> bez parametru přidá k označeným všechny položky v aktuálním adresáři\n"
-    textik+= " - - - add 1 |-> přidá k označeným položku s ID 1\n - - - add 1 2 3 7 8 9 |-> přidá k označeným položky s napsanými ID\n - - - add 1 - 15 |-> přidá k označeným položky z daného rozsahu\n - - Veškeré duplicitní záznamy se ignorují, chybné a neexistující výběry zobrazí chybu.\n"
-    textik+= " - [bold blue]showselect[/bold blue]\n - - Zobrazí seznam označených\n"
-    textik+= " - [bold blue]unselect [číslo/čísla oddělená mezerou/rozsah (tento parametr je volitelný)][/bold blue]\n - - Odoznačí aktuální poznačené podle zadaného výběru, k odoznačení se používá ID položek v seznamu označených (zobrazte si je pomocí showselect), příklady parametrů ->\n - - - unselect |-> bez parametru odoznačí všechno označené v seznamu označených\n"
-    textik+= " - - - unselect 1 |-> odoznačí položku s ID 1 v seznamu označených\n - - - unselect 1 2 3 7 8 9 |-> odoznačí položky s napsanými ID v seznamu označených|n - - - unselect 1 - 15 |-> odoznačí položky z daného rozsahu v seznamu označených\n - - Veškeré duplicitní záznamy se ignorují, chybné a neexistující výběry zobrazí chybu.\n"
-    textik+= " - [bold blue]root[/bold blue]\n - - zobrazí kořen aktuálního adresáře\n - [bold blue]roots[/bold blue]\n - - zobrazí kořeny adresářů\n - [bold blue]help[/bold blue]\n - - zobrazí pomoc, kterou teď čtete, přece víte jak jste se sem dostali\n - [bold blue]refresh[/bold blue]\n - - přenačte zobrazení a disky\n"
+   - select [číslo/čísla oddělená mezerou/rozsah (tento parametr je volitelný)]
+   - - Odoznačí aktuální poznačené a poznačí si výběr, k označení se používá ID položek v aktuální lokaci, příklady parametrů ->
+   - - - select |-> bez parametru označí všechny položky v aktualním adresáři
+   - - - select 1 |-> označí položku s ID 1
+   - - - select 1 2 3 7 8 9 |-> označí položky s napsanými ID
+   - - - select 1 - 15 |-> označí položky z daného rozsahu
+   - - Veškeré duplicitní záznamy se ignorují, chybné a neexistující výběry zobrazí chybu.
+   
+   - add [číslo/čísla oddělená mezerou/rozsah (tento parametr je volitelný)]
+   - - Přidá k označeným vybrané, k označení se používá ID položek v aktuální lokaci, příklady parametrů -> 
+   - - - add |-> bez parametru přidá k označeným všechny položky v aktuálním adresáři
+   - - - add 1 |-> přidá k označeným položku s ID 1
+   - - - add 1 2 3 7 8 9 |-> přidá k označeným položky s napsanými ID
+   - - - add 1 - 15 |-> přidá k označeným položky z daného rozsahu
+   - - Veškeré duplicitní záznamy se ignorují, chybné a neexistující výběry zobrazí chybu.
+   - showselect[/bold blue]
+   - - Zobrazí seznam označených
+   - unselect [číslo/čísla oddělená mezerou/rozsah (tento parametr je volitelný)]
+   - - Odoznačí aktuální poznačené podle zadaného výběru, k odoznačení se používá ID položek v seznamu označených (zobrazte si je pomocí showselect), příklady parametrů ->
+   - - - unselect |-> bez parametru odoznačí všechno označené v seznamu označených
+   - - - unselect 1 |-> odoznačí položku s ID 1 v seznamu označených
+   - - - unselect 1 2 3 7 8 9 |-> odoznačí položky s napsanými ID v seznamu označených
+   - - - unselect 1 - 15 |-> odoznačí položky z daného rozsahu v seznamu označených
+   - - Veškeré duplicitní záznamy se ignorují, chybné a neexistující výběry zobrazí chybu.
+   - root - - zobrazí kořen aktuálního adresáře\n - [bold blue]roots[/bold blue]\n - - zobrazí kořeny adresářů\n - [bold blue]help[/bold blue]\n - - zobrazí pomoc, kterou teď čtete, přece víte jak jste se sem dostali\n - [bold blue]refresh[/bold blue]\n - - přenačte zobrazení a disky\n"
     textik+= " - [bold blue]exit[/bold blue]\n - - ukončí program\n - [bold blue]info[/bold blue]\n - - zobrazí informace o programu\n"
     textik+= " - [bold blue]rows !číslo (povinný parametr)![/bold blue]\n - - Nastaví počet řádků tabulky na číslo zadané v parametru, příklady parametrů ->\n - - - rows 20 |-> nastaví počet řádků na 20\n - - Minimum řádků je 10, jakékoli menší číslo vyústí v chybu\n"
     textik+= " - [bold blue]open !číslo (povinný parametr)![/bold blue]\n - - Otevře soubor či složku na daném iD v aktuální lokaci, příklady parametrů ->\n - - - open 4 |-> otevře položku na ID 4 v aktuální lokaci\n - - Pokud se jedná o soubor, tak bude otevřen ve výchozí aplikaci systému\n - - Pokud jde o složku, tak do ní budete přesunuti\n"
