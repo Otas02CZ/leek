@@ -48,7 +48,7 @@ up = 0                                      # o kolik se posunouti
 drive = ""                                  # aktualni disk
 direction = ""                              # kterym smerem se posunout mezi stranami
 distance = 0                                # o kolik se posunouti mezi stranami
-version = "1.1.1"                             # verze programu
+version = "1.1.2"                             # verze programu
 author = "Otakar Kočí"                      # autor programu
 year = "2022"                               # rok verze
 type_select = ""                            # prepina mezi typem selectu
@@ -64,6 +64,7 @@ r_n_digit = 0                               # minimalni pocet cisel v prejmenova
 r_file_type = ""                            # druhy nazev nebo koncovka k prejmenovani vybrane polozky nebo take vybranych polozek
 r_advanced = False                          # pouziva se funkce pocitadla pro prejmenovani
 pre_select = ""                             # umisteni pred zobrazenim selectu
+pre_search = ""                             # umisteni pred pred zobrazenim searchu
 find = ""                                   # hledany vyraz
 sort_key = "none"                           # Podle jakého parametru seřaditi
 sort_direction = "up"                       # Jakým směrem máme řaditi
@@ -235,9 +236,6 @@ def copy_file(source, destination) -> bool:
     except:
         return False
     
-def search_file_or_folder(location, name): ################### NEHOTOVE
-    print("work")
-
 def is_numeric(word) -> bool:
     r"""
     Vyzkouší jestli string word je validní číslo, pokud ano vrátí True, jinak False
@@ -624,14 +622,11 @@ def go_up():
         errors.append("up_bad_input")
         return
     if location=="select":
-        if pre_select=="search":
-            location = "root"
-        else:
-            location = pre_select
-        up = 0
-    if location=="search":
         location = pre_select
-        up = 0
+        return
+    if location=="search":
+        location = pre_search
+        return
     while up>0:
         for i in drives:
             if i==location:
@@ -1444,7 +1439,7 @@ def do_search():
     Výsledky vyhledávání zobrazí na vlastním listu
     """
     
-    global info, errors, find, search_result, location, pre_select
+    global info, errors, find, search_result, location, pre_select, pre_search
     
     if location=="root":
         search_result = []
@@ -1468,6 +1463,8 @@ def do_search():
                 for file in files:
                     if find in os.path.basename(file):
                         search_result.append(root+"\\"+file)
+            if find in os.path.basename(i):
+                search_result.append(i)
     elif location=="search":
         search_backup = search_result.copy()
         search_result = []
@@ -1480,6 +1477,8 @@ def do_search():
                 for file in files:
                     if find in os.path.basename(file):
                         search_result.append(root+"\\"+file)
+            if find in os.path.basename(i):
+                search_result.append(i)
     else:
         search_result = []
         for root, dirs, files in os.walk(location):
@@ -1490,8 +1489,9 @@ def do_search():
             for file in files:
                 if find in os.path.basename(file):
                     search_result.append(root+"\\"+file)
-    pre_select = location
-    location = "search"
+    if location!="search":
+        pre_search = location
+        location = "search"
     info.append("search_successful")
     
 def check_and_set_sort():

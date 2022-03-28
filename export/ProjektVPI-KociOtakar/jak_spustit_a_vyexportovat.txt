@@ -5,4 +5,5 @@ Pokud něco nefunguje tak je potřeba přidat cestu k pythonu a aplikacím do pa
 
 Pro zabalení jako .exe
  - Pyinstaller - pokud jste nechali nainstalovat jako součást pythonu i pip tak zadáním v konzoli pip install pyinstaller
- poté v adresáři kde je leek.py zadejte v konzoli pyinstaller leek.py --hidden-import rich --hidden-import os --hidden-import shutil --onefile
+ poté v adresáři kde je leek.py zadejte v konzoli 
+	pyinstaller leek.py --onefile --hidden-import rich --hidden-import datetime --hidden-import operator --hidden-import shutil --hidden-import os
