@@ -48,7 +48,7 @@ up = 0                                      # o kolik se posunouti
 drive = ""                                  # aktualni disk
 direction = ""                              # kterym smerem se posunout mezi stranami
 distance = 0                                # o kolik se posunouti mezi stranami
-version = "1.1.2"                             # verze programu
+version = "1.2.1"                             # verze programu
 author = "Otakar Kočí"                      # autor programu
 year = "2022"                               # rok verze
 type_select = ""                            # prepina mezi typem selectu
@@ -880,6 +880,7 @@ def print_help():
     textik+= " - - - copyrename obrazek after 0 1 4 .jpg |-> všechny položky které jsou poznačené budou zkopírovány do aktuálního adresáře a přejmenovány takto - obrazek0000.jpg, obrazek0001.jpg, ..........\n"
     textik+= " - [bold blue]search !hledaný_výraz (povinný parametr)![/bold blue]\n - - Vyhledá soubory či složky obsahující hledaný_výraz v aktuálním umístění a v jeho podadresářích, příklady parametrů ->\n"
     textik+= " - - Průběžně informuje o vyhledávání, má kontrolu vstupu uživatele. Jako výsledek zobrazí seznam nalezených položek\n - - - search .txt |-> vyhledá všechny soubory v aktuálním adresáři a i v podadresářích končící na .txt\n"
+    textik+= " - [bold blue]dirsize !číslo (povinný parametr)![/bold blue]\n - - Zjistí a vypíše velikost zadané složky, příklady parametrů ->\n - - - dirsize 6  |-> zjistí a vypíše velikost adresáře na indexu číslo 6\n"
     textik+= " - [bold blue]sort !dle_čeho_má_řadit vzestupně_sestupně (povinný parametr)![/bold blue]\n - - Nastaví jakým způsobem se řadí a zobrazují zobrazené položky\n - - dle_čeho_se_má_řadit - řazení dle jména - name, výchozí zobrazení - none, dle velikosti - size, dle času založení - created, dle času poslední úpravy - changed\n"
     textik+= " - - vzestupně_sestupně - vzestupně - up, sestupně - down, příklady parametrů ->\n - - - sort name down - seřadí sestupně dle jmen\n"
     
@@ -942,7 +943,10 @@ def create_table():
             table.add_row(str(visible[i]["id"]), visible[i]["name"], "", "", "", "")
     else:
         for i in range(len(visible)):
-            table.add_row(str(visible[i]["id"]), visible[i]["name"], str(visible[i]["size"]), timedate(visible[i]["created"]), timedate(visible[i]["changed"]), str(visible[i]["rights"]))
+            if os.path.isdir(location + "\\" + visible[i]["name"]):
+                table.add_row(str(visible[i]["id"]), visible[i]["name"], "-", timedate(visible[i]["created"]), timedate(visible[i]["changed"]), str(visible[i]["rights"]))
+            else:
+                table.add_row(str(visible[i]["id"]), visible[i]["name"], str(visible[i]["size"]), timedate(visible[i]["created"]), timedate(visible[i]["changed"]), str(visible[i]["rights"]))
 
 def get_file_record_as_dictionary(files, i):
     r"""
