@@ -21,6 +21,8 @@ from rich.prompt import Confirm as confirm
 from rich.table import Table
 from rich.text import Text
 from datetime import datetime
+from configuration import Configuration
+from localization import Localization
 ####################################################
 
 # GLOBALNI PROMENNE ################################
@@ -38,8 +40,7 @@ viewable = []                               # dictionary zobrazitelnych polozek 
 visible = []                               # dictionary prave zobrazenych polozek v aktualnim umisteni podle promenne page
 errors = []                                 # promenna seznamu erroru a take vsech chybovych hlaseni
 info = []                                   # promenna seznamu informacnich a pozitivnich zprav od programu
-work = True                                 # promenna udrzujici cyklus main v chodu, pokud False tak se program vypne
-rows = 46                                   # max pocet radku k zobrazeni na jednu stranu
+rows = 40                                   # max pocet radku k zobrazeni na jednu stranu
 page = 1                                    # aktualni strana
 max_page = 1                                # celkovy pocet vsech stran
 to_open = 0                                 # index polozky na strance aktualni zobrazene k otevreni
@@ -68,6 +69,7 @@ pre_search = ""                             # umisteni pred pred zobrazenim sear
 find = ""                                   # hledany vyraz
 sort_key = "none"                           # Podle jakého parametru seřaditi
 sort_direction = "up"                       # Jakým směrem máme řaditi
+
 ####################################################
 
 def get_list_of_drives() -> list:
@@ -442,7 +444,7 @@ def check_validity_to_select():
     if error:
         errors.append("invalid_index_of_select")
 
-def do_remove():
+def do_remove(localization : Localization):
     r"""
     Vymaže soubory, složky a vnořené položky ve složkách,
     které jsou poznačené a vymaže aktuální seznam poznačených
@@ -454,8 +456,8 @@ def do_remove():
         return
     else:
         for i in range(len(selected)):
-            rprint("[bold red]Bude odstraněna položka - " + selected[i] + "[/bold red]")
-        if not confirm.ask("Opravdu chcete smazat " + str(len(selected)) + " položek??"):
+            rprint(localization.get_text('remove_item_message').format(selected[i]))
+        if not confirm.ask(localization.get_text('remove_confirm').format(len(selected))):
             info.append("remove_abort")
             return
         for i in range(len(selected)):
@@ -463,31 +465,32 @@ def do_remove():
                 if os.path.isfile(selected[i]):
                     if remove_file(selected[i]):
                         successful+=1
-                        rprint("[bold green]Smazána položka - [/bold green][bold blue]" + selected[i] + "[/bold blue]")
+                        rprint(localization.get_text('item_removed').format(selected[i]))
                     else:
-                        errors.append("Nelze odstranit položku - " + selected[i])
+                        rprint(localization.get_text('unable_to_remove_item').format(selected[i]))
                         failed+=1
                 elif os.path.isdir(selected[i]):
                     if len(os.listdir(selected[i]))==0:
                         if remove_directory(selected[i]):
                             successful+=1
-                            rprint("[bold green]Smazána položka - [/bold green][bold blue]" + selected[i] + "[/bold blue]")
+                            rprint(localization.get_text('item_removed').format(selected[i]))
                         else:
-                            errors.append("Nelze odstranit položku - " + selected[i])
+                            rprint(localization.get_text('unable_to_remove_item').format(selected[i]))
                             failed+=1
                     else:
                         if remove_tree_directory(selected[i]):
                             successful+=1
-                            rprint("[bold green]Smazána položka - [/bold green][bold blue]" + selected[i] + "[/bold blue]")
+                            rprint(localization.get_text('item_removed').format(selected[i]))
                         else:
-                            errors.append("Nelze odstranit položku - " + selected[i])
+                            rprint(localization.get_text('unable_to_remove_item').format(selected[i]))
                             failed+=1
             else:
-                errors.append("Neexistuje tato cesta - " + selected[i])
+                rprint(localization.get_text('nonexistent_path').format(selected[i]))
+                failed+=1
     selected = []
     info.append("remove_successful")
 
-def do_copy():
+def do_copy(localization : Localization):
     r"""
     Zkopíruje vybrané soubory, složky a vnořené položky v adresářích z
     poznačeného seznamu do aktuálního umístění zobrazeného
@@ -510,29 +513,30 @@ def do_copy():
             if os.path.exists(selected[i]):
                 if os.path.isfile(selected[i]):
                     if os.path.exists(location+"\\"+os.path.basename(selected[i])):
-                        errors.append("Položka - " + os.path.basename(selected[i]) + " již existuje v umístění - " + location + " , nelze kopírovati")
+                        rprint(localization.get_text('copy_item_already_exists').format(os.path.basename(selected[i]), location))
                         failed+=1
                     elif copy_file(selected[i], location+"\\"+os.path.basename(selected[i])):
                         successful+=1
-                        rprint("[bold green]Zkopírována položka - [/bold green][bold blue]" + selected[i] + "[/bold blue][bold green] - do umístění - [/bold green][bold blue]" + location + "[/bold blue]")
+                        rprint(localization.get_text('item_copied').format(selected[i], location))
                     else:
-                        errors.append("Nelze kopírovat položku - " + selected[i] + " do umístění - " + location)
+                        rprint(localization.get_text('unable_to_copy_item').format(selected[i], location))
                         failed+=1
                 elif os.path.isdir(selected[i]):
                     if os.path.exists(location+"\\"+os.path.basename(selected[i])):
-                        errors.append("Složka - " + os.path.basename(selected[i]) + " již existuje v umístění - " + location + " , nelze kopírovati")
+                        rprint(localization.get_text('copy_folder_already_exists').format(os.path.basename(selected[i]), location))
                         failed+=1
                     elif copy_entire_directory(selected[i], location+"\\"+os.path.basename(selected[i])):
                         successful+=1
-                        rprint("[bold green]Zkopírována položka - [/bold green][bold blue]" + selected[i] + "[/bold blue][bold green] - do umístění - [/bold green][bold blue]" + location + "[/bold blue]")
+                        rprint(localization.get_text('item_copied').format(selected[i], location))
                     else:
-                        errors.append("Nelze kopírovat položku - " + selected[i] + " do umístění - " + location)
+                        rprint(localization.get_text('unable_to_copy_item').format(selected[i], location))
                         failed+=1
             else:
-                errors.append("Neexistuje tato cesta - " + selected[i])
+                rprint(localization.get_text('nonexistent_path').format(selected[i]))
+                failed+=1
     info.append("copy_successful")
 
-def do_move():
+def do_move(localization : Localization):
     r"""
     Přesune soubory, složky a všechny vnořené položky adresářů
     z poznačených do aktuálního zobrazeného umístění
@@ -554,12 +558,13 @@ def do_move():
             if os.path.exists(selected[i]):
                 if move_file_or_directory(selected[i], location):
                     successful+=1
-                    rprint("[bold green]Přesunuta položka - [/bold green][bold blue]" + selected[i] + "[/bold blue][bold green] - do umístění - [/bold green][bold blue]" + location + "[/bold blue]")
+                    rprint(localization.get_text('item_moved').format(selected[i], location))
                 else:
-                    errors.append("Nelze přesunout položku - " + selected[i] + " do umístění - " + location)
+                    rprint(localization.get_text('unable_to_move').format(selected[i], location))
                     failed+=1
             else:
-                errors.append("Neexistuje tato cesta - " + selected[i])
+                rprint(localization.get_text('nonexistent_path').format(selected[i]))
+                failed+=1
     info.append("move_successful")
     selected = []
 
@@ -640,178 +645,6 @@ def go_up():
             location = location[:-1]
         up = up - 1
     info.append("up_success")
-  
-def print_errors():
-    r"""
-    Vypíše chybová hlášení z běhu programu
-    """
-    
-    global errors
-    for i in errors:
-        match i:
-            case "no_input":
-                rprint("[bold red]Nezadali jste žádný vstup[/bold red]")
-            case "select_bad_input":
-                rprint("[bold red]Zadali jste špatný vstup pro funkci select[/bold red]")
-            case "unknown_command":
-                rprint("[bold red]Zadali jste neznámý, nebo špatný příkaz[/bold red]")
-            case "open_bad_input":
-                rprint("[bold red]Zadali jste špatný vstup pro funkci open[/bold red]")
-            case "file_does_not_exist":
-                rprint("[bold red]Soubor či složka neexistuje[/bold red]")
-            case "permission_error":
-                rprint("[bold red]Nemáte oprávnění k tomuto úkonu[/bold red]")
-            case "up_bad_input":
-                rprint("[bold red]Zadali jste špatný vstup pro funkci up[/bold red]")
-            case "drive_does_not_exist":
-                rprint("[bold red]Vámi zvolený disk neexistuje[/bold red]")
-            case "drive_bad_input":
-                rprint("[bold red]Zadali jste špatný vstup pro funkci drive[/bold red]")
-            case "no_drive_no_root":
-                rprint("[bold red]Není zvolen disk, nejde se proto dostat do jeho kořene[/bold red]")
-            case "no_select_in_roots":
-                rprint("[bold red]Kořeny disků nelze označovat[/bold red]")
-            case "no_add_in_roots":
-                rprint("[bold red]Kořeny disků nelze přidat k označeným[/bold red]")
-            case "open_nonexistent":
-                rprint("[bold red]Nelze otevřít soubor či složku na indexu, který neexistuje[/bold red]")
-            case "invalid_index_of_select":
-                rprint("[bold red]Zadali jste špatné ID, při spouštění posledního příkazu, tato ID jsou ignorována[/bold red]")
-            case "no_select_in_select":
-                rprint("[bold red]Nemůžete si poznačit věci již poznačené[/bold red]")
-            case "rows_bad_input":
-                rprint("[bold red]Zadali jste špatný vstup pro funkci rows[/bold red]")
-            case "next_bad_input":
-                rprint("[bold red]Zadali jste špatný vstup pro funkci next[/bold red]")
-            case "previous_bad_input":
-                rprint("[bold red]Zadali jste špatný vstup pro funkci previous[/bold red]")
-            case "nowhere_to_go_next": 
-                rprint("[bold red]Nelze otevřít další stranu, jelikož neexistuje[/bold red]")
-            case "nowhere_to_go_previous":
-                rprint("[bold red]Nelze otevřít předchozí stranu, jelikož neexistuje[/bold red]")
-            case "no_up_in_root":
-                rprint("[bold red]Nejde jít více nahoru, již jsme v rootu[/bold red]")
-            case "up_bad_input":
-                rprint("[bold red]Zadali jste špatný vstup pro funkci up[/bold red]")
-            case "dirsize_nonexistent":
-                rprint("[bold red]Zadali jste neexistující index, při zavolání funkce dirsize[/bold red]")
-            case "file_or_does_not_exist_dir_in_dirsize":
-                rprint("[bold red]Nelze zjistit velikost pro položku na zadaném indexu[/bold red]")
-            case "dirsize_bad_input":
-                rprint("[bold red]Zadali jste špatný vstup pro funkci dirsize[/bold red]")
-            case "remove_nothing_to_remove":
-                rprint("[bold red]Není co bych smazal[/bold red]")
-            case "copy_nothing_to_copy":
-                rprint("[bold red]Nejsou vybrány žádné položky ke kopírování[/bold red]")
-            case "copy_no_copy_in_select":
-                rprint("[bold red]Nelze kopírovat do vyznačených[/bold red]")
-            case "copy_no_copy_in_root":
-                rprint("[bold red]Nelze kopírovat do kořene disků[/bold red]")
-            case "move_nothing_to_move":
-                rprint("[bold red]Nejsou vybrány žádné položky k přesunutí[/bold red]")
-            case "move_no_move_in_select":
-                rprint("[bold red]Nelze přesouvat do vyznačených[/bold red]")
-            case "move_no_move_in_root":
-                rprint("[bold red]Nelze přesouvat do kořene disků[/bold red]")
-            case "make_dir_no_root":
-                rprint("[bold red]Nelze vytvořit nový adresář v kořeni disků[/bold red]")
-            case "make_dir_no_select":
-                rprint("[bold red]Nelze vytvořit nový adresář v seznamu poznačených[/bold red]")
-            case "make_dir_bad_input":
-                rprint("[bold red]Zadali jste špatný vstup pro funkci makedir[/bold red]")
-            case "make_dir_failed":
-                rprint("[bold red]Nelze vytvořit nový adresář[/bold red]")
-            case "rename_bad_input":
-                rprint("[bold red]Zadali jste špatný vstup pro funkci rename[/bold red]")
-            case "rename_more_select_no_advanced":
-                rprint("[bold red]Je vybráno více položek k přejmenování, ale nezadali jste rozšiřující parametry funkce rename[/bold red]")
-            case "rename_advanced_but_one":
-                rprint("[bold red]Zadali jste rozšířené parametry funkce rename, ale máte zvolenou pouze jednu položku k přejmenování[/bold red]")
-            case "rename_nothing_to_rename":
-                rprint("[bold red]Nejsou vybrány žádné položky k přejmenování[/bold red]")
-            case "copyrename_no_copy_in_select":
-                rprint("[bold red]Nelze kopírovat (a přejmenovávat) do vyznačených[/bold red]")
-            case "copyrename_no_copy_in_root":
-                rprint("[bold red]Nelze kopírovat (a přejmenovávat) do kořene disků[/bold red]")
-            case "copyrename_bad_input":
-                rprint("[bold red]Zadali jste špatný vstup pro funkci copyrename[/bold red]")
-            case "copyrename_more_select_no_advanced":
-                rprint("[bold red]Je vybráno více položek ke kopírování a přejmenování, ale nezadali jste rozšiřující parametry funkce copyrename[/bold red]")
-            case "copyrename_advanced_but_one":
-                rprint("[bold red]Zadali jste rozšířené parametry funkce copyrename, ale máte zvolenou pouze jednu položku ke kopírování a přejmenování[/bold red]")
-            case "copyrename_nothing_to_copyrename":
-                rprint("[bold red]Nejsou vybrány žádné položky ke kopírování a přejmenování[/bold red]")
-            case "search_bad_input":
-                rprint("[bold red]Zadali jste špatný vstup pro funkci search[/bold red]")
-            case "move_no_move_in_search":
-                rprint("[bold red]Ve vyhledaných položkách zkrátka nelze přesouvati[/bold red]")
-            case "copyrename_no_copy_in_search":
-                rprint("[bold red]Ve vyhledaných položkách zkrátka nelze kopírovati s přejmenováním[/bold red]")
-            case "copy_no_copy_in_search":
-                rprint("[bold red]Ve vyhledaných položkách zkrátka nelze kopírovati[/bold red]")
-            case "make_dir_no_search":
-                rprint("[bold red]Nelze vytvořit složku ve vyhledaných položkách[/bold red]")
-            case _:
-                rprint("[bold red]" + i + "[/bold red]")
-    errors = []
-
-def print_info():
-    r"""
-    Vypíše informační zprávy z výsledků příkazů
-    """
-    
-    global info, successful, failed
-    for i in info:
-        match i:
-            case "select_success":
-                rprint("[bold green]Soubory a složky úspěšně poznačeny[/bold green]")
-            case "open_dir_success":
-                rprint("[bold green]Vybraná složka je otevřená[/bold green]")
-            case "open_file_success":
-                rprint("[bold green]Vybraný soubor otevřen v externí aplikaci[/bold green]")
-            case "refreshed":
-                rprint("[bold green]Je zaktualizováno[/bold green]")
-            case "up_success":
-                rprint("[bold green]Posunuto výše[/bold green]")
-            case "root_success":
-                rprint("[bold green]Jsme v kořeni disku[/bold green]")
-            case "roots_success":
-                rprint("[bold green]Jsme v kořeni disků[/bold green]")
-            case "drive_success":
-                rprint("[bold green]Zobrazen Vámi zvolený disk[/bold green]")
-            case "add_success":
-                rprint("[bold green]Soubory a složky úspěšně přidány k poznačeným[/bold green]")
-            case "showselect_success":
-                rprint("[bold green]Poznačené soubory a složky jsou zobrazeny[/bold green]")
-            case "unselect_success":
-                rprint("[bold green]Zvolená poznačení jsou odznačena[/bold green]")
-            case "rows_success":
-                rprint("[bold green]Maximální počet řádků tabulky výpisu úspěšně změněn[/bold green]")
-            case "next_success":
-                rprint("[bold green]Zobrazen Vámi zvolený další list[/bold green]")
-            case "previous_success":
-                rprint("[bold green]Zobrazen Vámi zvolený předchozí list[/bold green]")
-            case "dirsize_success":
-                rprint("[bold green]Velikost složky na indexu [/bold green][bold blue]" + str(to_open) + "[bold green] je [/bold green][bold blue]" + str(int(dirsize/1024)) + "[/bold blue][bold green] KB[/bold green]")
-            case "remove_successful":
-                rprint("[bold green]Úspěšně odstraněno [/bold green][bold blue]" + str(successful) + "[/bold blue][bold green] položek, selhalo odstraňování [/bold green][bold red]" + str(failed) + "[/bold red][bold green] položek[/bold green]")
-                rprint("[bold green]Seznam poznačených položek je smazán, jelikož položky neexistují[/bold green]")
-            case "remove_abort":
-                rprint("[bold green]Odstraňování zrušeno[/bold green]")
-            case "copy_successful":
-                rprint("[bold green]Úspěšně zkopírováno [/bold green][bold blue]" + str(successful) + "[/bold blue][bold green] položek, selhalo kopírování [/bold green][bold red]" + str(failed) + "[/bold red][bold green] položek[/bold green]")
-            case "copy_successful":
-                rprint("[bold green]Úspěšně přesunuto [/bold green][bold blue]" + str(successful) + "[/bold blue][bold green] položek, selhalo přesouvání [/bold green][bold red]" + str(failed) + "[/bold red][bold green] položek[/bold green]")
-            case "make_dir_successful":
-                rprint("[bold green]Nový adresář úspěšně vytvořen[/bold green]")
-            case "rename_successful":
-                rprint("[bold green]Úspěšně přejmenováno [/bold green][bold blue]" + str(successful) + "[/bold blue][bold green] položek, selhalo přejmenování [/bold green][bold red]" + str(failed) + "[/bold red][bold green] položek[/bold green]")
-            case "copyrename_successful":
-                rprint("[bold green]Úspěšně zkopírováno a přejmenováno [/bold green][bold blue]" + str(successful) + "[/bold blue][bold green] položek, selhalo kopírování a přejmenování [/bold green][bold red]" + str(failed) + "[/bold red][bold green] položek[/bold green]")
-            case "search_successful":
-                rprint("[bold green]Výsledky vyhledávání[/bold green]")
-    info = []
-    successful = failed = 0
 
 def print_app_info():
     r"""
@@ -832,7 +665,7 @@ def print_app_info():
 
     input("Zmáčkněte Enter pro skrytí těchto informací: ")
 
-def print_help():
+def print_help(localization : Localization):
     r"""
     Vypíše pomoc programu uživateli
     """
@@ -886,7 +719,7 @@ def print_help():
     
     rprint(Panel(textik, title="Seznam příkazů a vysvětlení", style="bold green"))
     
-    input("Zmáčkněte Enter pro skrytí těchto informací: ")
+    input(localization.get_text('press_enter_to_hide'))
 
 def print_page():
     r"""
@@ -924,19 +757,19 @@ def print_sortinfo():
             
     rprint(textik)
 
-def create_table():
+def create_table(cfg : Configuration, localization : Localization):
     r"""
     Vytvoří tabulkový list pro zobrazení z funkce main
     """
     
     global table
     table = Table(title=location)
-    table.add_column("ID", justify="center", style="blue", no_wrap=True)
-    table.add_column("Název souboru / složky", justify="left", style="green", no_wrap=True)
-    table.add_column("Velikost v KB", justify="center", style="yellow", no_wrap=True)
-    table.add_column("Založeno", justify="center", style="white", no_wrap=True)
-    table.add_column("Upraveno", justify="center", style="cyan", no_wrap=True)
-    table.add_column("Práva", justify="center", style="red", no_wrap=True)
+    table.add_column(localization.get_text('id'), justify="center", style="blue", no_wrap=True)
+    table.add_column(localization.get_text('file_or_folder_name'), justify="left", style="green", no_wrap=True)
+    table.add_column(localization.get_text('size').format(cfg.get_cfg('size_unit')), justify="center", style="yellow", no_wrap=True)
+    table.add_column(localization.get_text('created'), justify="center", style="white", no_wrap=True)
+    table.add_column(localization.get_text('modified'), justify="center", style="cyan", no_wrap=True)
+    table.add_column(localization.get_text('rights'), justify="center", style="red", no_wrap=True)
     
     if location=="root":
         for i in range(len(visible)):
@@ -1231,7 +1064,7 @@ def check_to_rename(how) -> bool:
         errors.append(error)
         return False
 
-def do_rename():
+def do_rename(localization : Localization):
     r"""
     Provede přejmenování vyznačených souborů či složek, nebo souboru či složky
     Přejmenování je buďto jednoduché (pouze pro jednu položku)
@@ -1245,10 +1078,11 @@ def do_rename():
     elif not r_advanced:
         if len(selected)==1:
             if rename_file_or_directory(selected[0], r_new_name):
+                rprint(localization.get_text('item_renamed').format(selected[0], r_new_name))
                 successful+=1
                 info.append("rename_successful")
             else:
-                errors.append("Nelze přejmenovat položku - " + selected[i] + " na - " + r_new_name)
+                rprint(localization.get_text('unable_to_rename').format(selected[0], r_new_name))
                 failed+=1
         else:
             errors.append("rename_more_select_no_advanced")
@@ -1285,16 +1119,16 @@ def do_rename():
                                         new_name+=r_file_type
                 if rename_file_or_directory(selected[i], new_name):
                     successful+=1
-                    rprint("[bold green]Přejmenována položka - [/bold green][bold blue]" + selected[i] + "[/bold blue][bold green] - na - [/bold green][bold blue]" + new_name + "[/bold blue]")
+                    rprint(localization.get_text('item_renamed').format(selected[i], new_name))
                 else:
-                    errors.append("Nelze přejmenovat položku - " + selected[i] + " na - " + new_name)
+                    rprint(localization.get_text('unable_to_rename').format(selected[i], new_name))
                     failed+=1
             info.append("rename_successful")
         else:
             errors.append("rename_advanced_but_one")
     selected = []
 
-def do_copyrename():
+def do_copyrename(localization : Localization):
     r"""
     Umožňuje funcionalitu zkopírování a přejmenování zaráz,
     Funguje jako kombinace copy a rename,
@@ -1320,26 +1154,27 @@ def do_copyrename():
             if os.path.exists(selected[0]):
                 if os.path.isfile(selected[0]):
                     if os.path.exists(location+"\\"+r_new_name):
-                        errors.append("Položka - " + r_new_name + " již existuje v umístění - " + location + " , nelze kopírovati")
+                        rprint(localization.get_text('copy_item_already_exists').format(r_new_name, location))
                         failed+=1
                     elif copy_file(selected[0], location+"\\"+r_new_name):
                         successful+=1
-                        rprint("[bold green]Přejmenována položka - [/bold green][bold blue]" + selected[i] + "[/bold blue][bold green] - na - [/bold green][bold blue]" + new_name + "[/bold blue]")
+                        rprint(localization.get_text('item_copyrenamed').format(selected[0], r_new_name))
                     else:
-                        errors.append("Nelze kopírovat položku - " + selected[0] + " do umístění - " + location + " a přejmenovat ji na - " + r_new_name)
+                        rprint(localization.get_text('unable_to_copyrename_item').format(selected[0], location, r_new_name))
                         failed+=1
                 if os.path.isdir(selected[0]):
                     if os.path.exists(location+"\\"+r_new_name):
-                        errors.append("Složka - " + r_new_name + " již existuje v umístění - " + location + " , nelze kopírovati")
+                        rprint(localization.get_text('copy_folder_already_exists').format(r_new_name, location))
                         failed+=1
                     elif copy_entire_directory(selected[0], location+"\\"+r_new_name):
                         successful+=1
-                        rprint("[bold green]Přejmenována položka - [/bold green][bold blue]" + selected[i] + "[/bold blue][bold green] - na - [/bold green][bold blue]" + new_name + "[/bold blue]")
+                        rprint(localization.get_text('item_copyrenamed').format(selected[0], r_new_name))
                     else:
-                        errors.append("Nelze kopírovat položku - " + selected[0] + " do umístění - " + location  + " a přejmenovat ji na - " + r_new_name)
+                        rprint(localization.get_text('unable_to_copyrename_item').format(selected[0], location, r_new_name))
                         failed+=1
             else:
-                errors.append("Neexistuje tato cesta - " + selected[0])
+                rprint(localization.get_text('nonexistent_path').format(selected[i]))
+                failed+=1
         else:
             errors.append("coopyrename_more_select_no_advanced")
             return
@@ -1376,24 +1211,27 @@ def do_copyrename():
                 if os.path.exists(selected[i]):
                     if os.path.isfile(selected[i]):
                         if os.path.exists(location+"\\"+new_name):
-                            errors.append("Položka - " + new_name + " již existuje v umístění - " + location + " , nelze kopírovati")
+                            rprint(localization.get_text('copy_item_already_exists').format(new_name, location))
                             failed+=1
                         elif copy_file(selected[i], location+"\\"+new_name):
+                            rprint(localization.get_text('item_copyrenamed').format(selected[i], new_name))
                             successful+=1
                         else:
-                            errors.append("Nelze kopírovat položku - " + selected[i] + " do umístění - " + location + " a přejmenovat ji na - " + new_name)
+                            rprint(localization.get_text('unable_to_copyrename_item').format(selected[i], location, new_name))
                             failed+=1
                     if os.path.isdir(selected[i]):
                         if os.path.exists(location+"\\"+new_name):
-                            errors.append("Složka - " + new_name + " již existuje v umístění - " + location + " , nelze kopírovati")
+                            rprint(localization.get_text('copy_folder_already_exists').format(new_name, location))
                             failed+=1
                         elif copy_entire_directory(selected[i], location+"\\"+new_name):
+                            rprint(localization.get_text('item_copyrenamed').format(selected[i], new_name))
                             successful+=1
                         else:
-                            errors.append("Nelze kopírovat položku - " + selected[i] + " do umístění - " + location  + " a přejmenovat ji na - " + new_name)
+                            rprint(localization.get_text('unable_to_copyrename_item').format(selected[i], location, new_name))
                             failed+=1
                 else:
-                    errors.append("Neexistuje tato cesta - " + selected[i])
+                    rprint(localization.get_text('nonexistent_path').format(selected[i]))
+                    failed+=1
         else:
             errors.append("coopyrename_advanced_but_one")
             return
@@ -1437,7 +1275,7 @@ def check_to_search() -> bool:
         errors.append("search_bad_input")
         return False
 
-def do_search():
+def do_search(localization : Localization):
     r"""
     Vyhledává výraz zadaný od uživatele v aktuálním umístění zobrazení
     Výsledky vyhledávání zobrazí na vlastním listu
@@ -1449,7 +1287,7 @@ def do_search():
         search_result = []
         for i in drives:
             for root, dirs, files in os.walk(i):
-                rprint("[bold green]Vyhledáváme v umístění - [/bold green][bold blue]" + root + "[/bold blue][bold green] - Pro ukončení vypněte program[/bold green]")
+                rprint(localization.get_text('searching_in').format(root))
                 for dir in dirs:
                     if find in os.path.basename(dir):
                         search_result.append(root+"\\"+dir)
@@ -1460,7 +1298,7 @@ def do_search():
         search_result = []
         for i in selected:
             for root, dirs, files in os.walk(i):
-                rprint("[bold green]Vyhledáváme v umístění - [/bold green][bold blue]" + root + "[/bold blue][bold green] - Pro ukončení vypněte program[/bold green]")
+                rprint(localization.get_text('searching_in').format(root))
                 for dir in dirs:
                     if find in os.path.basename(dir):
                         search_result.append(root+"\\"+dir)
@@ -1474,7 +1312,7 @@ def do_search():
         search_result = []
         for i in search_backup:
             for root, dirs, files in os.walk(i):
-                rprint("[bold green]Vyhledáváme v umístění - [/bold green][bold blue]" + root + "[/bold blue][bold green] - Pro ukončení vypněte program[/bold green]")
+                rprint(localization.get_text('searching_in').format(root))
                 for dir in dirs:
                     if find in os.path.basename(dir):
                         search_result.append(root+"\\"+dir)
@@ -1486,7 +1324,7 @@ def do_search():
     else:
         search_result = []
         for root, dirs, files in os.walk(location):
-            rprint("[bold green]Vyhledáváme v umístění - [/bold green][bold blue]" + root + "[/bold blue][bold green] - Pro ukončení vypněte program[/bold green]")
+            rprint(localization.get_text('searching_in').format(root))
             for dir in dirs:
                 if find in os.path.basename(dir):
                     search_result.append(root+"\\"+dir)
@@ -1667,105 +1505,142 @@ def refresh_all():
     create_viewable()
     create_visible()
 
-def main():
+def size_divider(cfg : Configuration) -> int:
+    match cfg.get_cfg('size_unit'):
+        case 'B' : return 1
+        case 'KB': return 1000
+        case "MB": return 1000000
+        case "GB": return 1000000000
+        case "TB": return 1000000000000
+
+def print_info_error_message(cfg : Configuration, localization : Localization, error_keys : list, info_keys : list):
+    for error_key in error_keys:
+        localized_message = localization.get_text(error_key)
+        if localized_message=='none':
+            rprint(f"[bold red] {error_key} [/bold red]")
+        else:
+            rprint(localized_message)
+    for info_key in info_keys:
+        match info_key:
+            case 'dirsize_success':
+                rprint(localization.get_text(info_key).format(to_open, int(dirsize/size_divider(cfg)), cfg.get_cfg['size_unit']))
+            case 'remove_successful':
+                rprint(localization.get_text(info_key).format(successful, failed))
+            case 'copy_successful':
+                rprint(localization.get_text(info_key).format(successful, failed))
+            case 'rename_successful':
+                rprint(localization.get_text(info_key).format(successful, failed))
+            case 'copyrename_successful':
+                rprint(localization.get_text(info_key).format(successful, failed))
+            case _:   
+                localized_message = localization.get_text(info_key)
+                if localized_message=='none':
+                    rprint(f"[bold red] {info_key} [/bold red]")
+                else:
+                    rprint(localized_message)    
+
+if __name__ == "__main__":
     r"""
     Hlavní tělo aplikace, nechává zobrazit většinu informací,
     přijímá od uživatele příkay s parametry a podle nich volá v matchi zadané funkce
     je držen proměnnou work
     Zpracovává vstup od uživatele
     """
+    config = Configuration()
+    localization = Localization(config)
+    
+    while True:
+        refresh_all()
+        clear()
+        create_table(config, localization)
 
-    global work, errors, info, table, location, direction, page, type_select, pre_select
-    refresh_all()
-    clear()
-    create_table()
-
-    rprint(table)
-    print_page()
-    print_sortinfo()
-    print_errors()
-    print_info()
-    if check_input(prompt.ask("[bold]Zadej příkaz [/bold](help)")):
-        match user_input[0]:
-            case "select": 
-                if check_to_select():
-                    check_validity_to_select()
-                    do_select_or_add("select")
-            case "rename":
-                if check_to_rename("copy"):
-                    do_rename()
-            case "remove":
-                do_remove()
-            case "copy": 
-                do_copy()
-            case "move":
-                do_move()
-            case "up":
-                if check_to_up():
-                    go_up()
-            case "search":
-                if check_to_search():
-                    do_search()
-            case "sort": 
-                check_and_set_sort()
-            case "showselect": 
-                pre_select = location
-                location = "select"
-                info.append("showselect_success")
-                page = 1
-            case "copyrename":
-                if check_to_rename("copyrename"):
-                    do_copyrename()
-            case "unselect":
-                type_select = "unselect"
-                if check_to_select():
-                    check_validity_to_select()
-                    go_unselect()
-            case "root":
-                go_root()
-            case "drive": 
-                if check_drive():
-                    go_drive()
-            case "roots":
-                location = "root"
-                info.append("roots_success")
-            case "next":
-                if check_next_previous():
-                    direction="next"
-                    do_next_previous()
-            case "previous":
-                if check_next_previous():
-                    direction="previous"
-                    do_next_previous()
-            case "help": 
-                print_help()
-            case "refresh":
-                info.append("refreshed")
-                return
-            case "add":
-                if check_to_select():
-                    check_validity_to_select()
-                    do_select_or_add("add")
-            case "exit":
-                work = False
-            case "open":
-                if check_to_open():
-                    open()
-            case "rows":
-                check_get_rows()
-            case "info":
-                print_app_info()
-            case "dirsize":
-                if check_to_open():
-                    get_dirsize()
-            case "makedir":
-                if check_new_dir_name():
-                    make_dir()
-                print()
-            case _:
-                errors.append("unknown_command")
-
-# Pokud work je False tak se program vypne   
-while work:
-    main()
-rprint("[bold blue]Mějte se[/bold blue]")
+        rprint(table)
+        print_page()
+        print_sortinfo()
+        print_info_error_message(config, localization, errors, info)
+        errors = []
+        info = []
+        successful = failed = 0
+        if check_input(prompt.ask(localization.get_text('insert_cmd'))):
+            match user_input[0]:
+                case "select": 
+                    if check_to_select():
+                        check_validity_to_select()
+                        do_select_or_add("select")
+                case "rename":
+                    if check_to_rename("copy"):
+                        do_rename(localization)
+                        input(localization.get_text('press_enter_to_hide'))
+                case "remove":
+                    do_remove(localization)
+                    input(localization.get_text('press_enter_to_hide'))
+                case "copy": 
+                    do_copy(localization)
+                    input(localization.get_text('press_enter_to_hide'))
+                case "move":
+                    do_move(localization)
+                    input(localization.get_text('press_enter_to_hide'))
+                case "up":
+                    if check_to_up():
+                        go_up()
+                case "search":
+                    if check_to_search():
+                        do_search()
+                case "sort": 
+                    check_and_set_sort()
+                case "showselect": 
+                    pre_select = location
+                    location = "select"
+                    info.append("showselect_success")
+                    page = 1
+                case "copyrename":
+                    if check_to_rename("copyrename"):
+                        do_copyrename(localization)
+                        input(localization.get_text('press_enter_to_hide'))
+                case "unselect":
+                    type_select = "unselect"
+                    if check_to_select():
+                        check_validity_to_select()
+                        go_unselect()
+                case "root":
+                    go_root()
+                case "drive": 
+                    if check_drive():
+                        go_drive()
+                case "roots":
+                    location = "root"
+                    info.append("roots_success")
+                case "next":
+                    if check_next_previous():
+                        direction="next"
+                        do_next_previous()
+                case "previous":
+                    if check_next_previous():
+                        direction="previous"
+                        do_next_previous()
+                case "help": 
+                    print_help(localization)
+                case "refresh":
+                    info.append("refreshed")
+                case "add":
+                    if check_to_select():
+                        check_validity_to_select()
+                        do_select_or_add("add")
+                case "exit":
+                    break
+                case "open":
+                    if check_to_open():
+                        open()
+                case "rows":
+                    check_get_rows()
+                case "info":
+                    print_app_info(localization)
+                case "dirsize":
+                    if check_to_open():
+                        get_dirsize()
+                case "makedir":
+                    if check_new_dir_name():
+                        make_dir()
+                case _:
+                    errors.append("unknown_command")
+    rprint(localization.get_text('bye_message'))
