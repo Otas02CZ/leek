@@ -25,6 +25,16 @@ from configuration import Configuration
 from localization import Localization
 ####################################################
 
+class CFG:
+    VERSION = "1.2.1"
+    AUTHOR = "Otakar Kočí"
+    DATE = "08/08/2022"
+    PYTHON_VERSION = "3.10 (3.10.6)"
+    RICH_VERSION = "12.5.1"
+    PYINSTALLER_VERSION = "5.3"
+    UPX_VERSION = "3.96"
+    ZIP7_VERSION = "22.01"
+
 # GLOBALNI PROMENNE ################################
 console = Console()                         # objekt konzole pro vyuziti nekterych funkci knihovny rich
 layout = Layout()                           # objekt layoutu pro vyuziti nekterych funkci knihovny rich
@@ -40,7 +50,6 @@ viewable = []                               # dictionary zobrazitelnych polozek 
 visible = []                               # dictionary prave zobrazenych polozek v aktualnim umisteni podle promenne page
 errors = []                                 # promenna seznamu erroru a take vsech chybovych hlaseni
 info = []                                   # promenna seznamu informacnich a pozitivnich zprav od programu
-rows = 40                                   # max pocet radku k zobrazeni na jednu stranu
 page = 1                                    # aktualni strana
 max_page = 1                                # celkovy pocet vsech stran
 to_open = 0                                 # index polozky na strance aktualni zobrazene k otevreni
@@ -49,9 +58,6 @@ up = 0                                      # o kolik se posunouti
 drive = ""                                  # aktualni disk
 direction = ""                              # kterym smerem se posunout mezi stranami
 distance = 0                                # o kolik se posunouti mezi stranami
-version = "1.2.1"                             # verze programu
-author = "Otakar Kočí"                      # autor programu
-year = "2022"                               # rok verze
 type_select = ""                            # prepina mezi typem selectu
 dirsize = 0                                 # uklada velikost zvoleneho adresare
 successful = 0                              # pocet operaci uspesne zvladnutych
@@ -67,8 +73,6 @@ r_advanced = False                          # pouziva se funkce pocitadla pro pr
 pre_select = ""                             # umisteni pred zobrazenim selectu
 pre_search = ""                             # umisteni pred pred zobrazenim searchu
 find = ""                                   # hledany vyraz
-sort_key = "none"                           # Podle jakého parametru seřaditi
-sort_direction = "up"                       # Jakým směrem máme řaditi
 
 ####################################################
 
@@ -646,82 +650,28 @@ def go_up():
         up = up - 1
     info.append("up_success")
 
-def print_app_info():
+def print_app_info(localization : Localization):
     r"""
     Vypíše základní informace programu
     """
     
     clear()
-    rprint("[bold green]----------------------------------------------------------------[/bold green]")
-    rprint("[bold blue] ------ Leek - the file manager[/bold blue]")
-    rprint("[bold red] ------ Pórek - správce souborů[/bold red]")
-    rprint("[bold green]----------------------------------------------------------------[/bold green]")
-    rprint("[bold cyan] ------ verze: [/bold cyan][bold white]" + version + "[/bold white]")
-    rprint("[bold magenta] ------ autor: [/bold magenta][bold white]" + author + "[/bold white]")
-    rprint("[bold green] ------ vytvořeno: [/bold green][bold white]" + year + "[/bold white]")
-    rprint("[bold green]----------------------------------------------------------------[/bold green]")
-    rprint("[bold red] ------ Tento program využívá Python 3.10 a rich 11.2, díky :smiley:[/bold red]")
-    rprint("[bold green]----------------------------------------------------------------[/bold green]")
-
-    input("Zmáčkněte Enter pro skrytí těchto informací: ")
+    text = localization.get_text('app_info').format(CFG.VERSION, CFG.AUTHOR, CFG.DATE, CFG.PYTHON_VERSION, CFG.RICH_VERSION, CFG.PYINSTALLER_VERSION, CFG.UPX_VERSION, CFG.ZIP7_VERSION)
+    rprint(Panel.fit(text, title=localization.get_text('app_info_leek_title'), style='bold magenta'))
+    input(localization.get_text('press_enter_to_hide'))
 
 def print_help(localization : Localization):
     r"""
     Vypíše pomoc programu uživateli
     """
-    
-    text = Text(justify="full")
-    rprint(Panel(Text("Vítejte v podpoře programu Leek (no leak)", style="bold white", justify="center")))
-    textik = "Leek (pórek) je jednoduchý konzolový správce souborů ovládaný krátkými příkazy, jakožto každý správce souborů umí zobrazovat soubory, složky a základní informace o nich, veškeré zobrazování se děje na tabulkových listech"
-    textik+= ", jejichž velikost si můžete sami upravit. Zároveň můžete volně mezi těmito listy přecházet. Soubory, disky a složky voláte dle jejich zobrazovaného ID. Leek je schopen volně přecházet mezi disky, vracet se zpět na root disku i na root celku."
-    textik+= " Zobrazení můžete kdykoli aktualizovat. Součástí leek je i jednoduché sledování chyb a úspěšných operací, které uživateli umožní se jednoduše vyznat ve výsledcích zadaných příkazů."
-    textik+= " V leeku si můžete poznačovat soubory pro budoucí práci s nimi, soubory poznačené si také můžete nechat zobrazit, nebo je odoznačovat. Leek samozřejmě umí soubory a složky přesouvat,"
-    textik+= " přejmenovávat, kopírovat, kopírovat a přejmenovávat, mazat, vyhledávat v nich a zobrazení různě seřazovat. Leek využívá Python verze 3.10 a knihovnu rich 11.2, minimální verzí operačního systému Windows je Win 8 asi 64bit."
-    text.append(textik, style="bold yellow")
-    rprint(Panel(text, title="Základní informace" ,style="bold blue"))
-    textik = " - [bold blue]select [číslo/čísla oddělená mezerou/rozsah (tento parametr je volitelný)][/bold blue]\n - - Odoznačí aktuální poznačené a poznačí si výběr, k označení se používá ID položek v aktuální lokaci, příklady parametrů ->\n - - - select |-> bez parametru označí všechny položky v aktualním adresáři\n"
-    textik+= " - - - select 1 |-> označí položku s ID 1\n - - - select 1 2 3 7 8 9 |-> označí položky s napsanými ID\n - - - select 1 - 15 |-> označí položky z daného rozsahu\n - - Veškeré duplicitní záznamy se ignorují, chybné a neexistující výběry zobrazí chybu.\n"
-    textik+= " - [bold blue]add [číslo/čísla oddělená mezerou/rozsah (tento parametr je volitelný)][/bold blue]\n - - Přidá k označeným vybrané, k označení se používá ID položek v aktuální lokaci, příklady parametrů ->\n - - - add |-> bez parametru přidá k označeným všechny položky v aktuálním adresáři\n"
-    textik+= " - - - add 1 |-> přidá k označeným položku s ID 1\n - - - add 1 2 3 7 8 9 |-> přidá k označeným položky s napsanými ID\n - - - add 1 - 15 |-> přidá k označeným položky z daného rozsahu\n - - Veškeré duplicitní záznamy se ignorují, chybné a neexistující výběry zobrazí chybu.\n"
-    textik+= " - [bold blue]showselect[/bold blue]\n - - Zobrazí seznam označených\n"
-    textik+= " - [bold blue]unselect [číslo/čísla oddělená mezerou/rozsah (tento parametr je volitelný)][/bold blue]\n - - Odoznačí aktuální poznačené podle zadaného výběru, k odoznačení se používá ID položek v seznamu označených (zobrazte si je pomocí showselect), příklady parametrů ->\n - - - unselect |-> bez parametru odoznačí všechno označené v seznamu označených\n"
-    textik+= " - - - unselect 1 |-> odoznačí položku s ID 1 v seznamu označených\n - - - unselect 1 2 3 7 8 9 |-> odoznačí položky s napsanými ID v seznamu označených|n - - - unselect 1 - 15 |-> odoznačí položky z daného rozsahu v seznamu označených\n - - Veškeré duplicitní záznamy se ignorují, chybné a neexistující výběry zobrazí chybu.\n"
-    textik+= " - [bold blue]root[/bold blue]\n - - zobrazí kořen aktuálního adresáře\n - [bold blue]roots[/bold blue]\n - - zobrazí kořeny adresářů\n - [bold blue]help[/bold blue]\n - - zobrazí pomoc, kterou teď čtete, přece víte jak jste se sem dostali\n - [bold blue]refresh[/bold blue]\n - - přenačte zobrazení a disky\n"
-    textik+= " - [bold blue]exit[/bold blue]\n - - ukončí program\n - [bold blue]info[/bold blue]\n - - zobrazí informace o programu\n"
-    textik+= " - [bold blue]rows !číslo (povinný parametr)![/bold blue]\n - - Nastaví počet řádků tabulky na číslo zadané v parametru, příklady parametrů ->\n - - - rows 20 |-> nastaví počet řádků na 20\n - - Minimum řádků je 10, jakékoli menší číslo vyústí v chybu\n"
-    textik+= " - [bold blue]open !číslo (povinný parametr)![/bold blue]\n - - Otevře soubor či složku na daném iD v aktuální lokaci, příklady parametrů ->\n - - - open 4 |-> otevře položku na ID 4 v aktuální lokaci\n - - Pokud se jedná o soubor, tak bude otevřen ve výchozí aplikaci systému\n - - Pokud jde o složku, tak do ní budete přesunuti\n"
-    textik+= " - [bold blue]drive !znak disku (povinný parametr)![/bold blue]\n - - Otevře disk daný znakem disku, příklady parametrů ->\n - - - drive f |-> otevře disk F:\\\\\n - - Pokud zadáte něco jiného, než platný znak disku, tak to bude považováno za chybu\n"
-    textik+= " - [bold blue]up [číslo (tento parametr je volitelný)][/bold blue]\n - - Přesune Vás o adresář výše, v případě zadání čísla Vás posune o tolik adresářů výše, kolik je dané číslo, příklady parametrů ->\n - - - up |-> posune Vás o jeden adresář výše\n"
-    textik+= " - - - up 6 |-> posune Vás o 6 adresářů výše\n - - Pokud zadáte číslo menší jak 1, tak se zobrazí chyba\n - - Pokud zadáte číslo větší, než kolikrát je možné jít výše, tak se program pokusí jít co nejvýše\n"
-    textik+= " - [bold blue]next [číslo (tento parametr je volitelný)][/bold blue]\n - - Pokud je více stran k zobrazení všech položek v aktuální lokaci, tak se můžete díky tomuto příkazu posunout na další stranu, či o více stran podle čísla, které zadáte, příklady parametrů ->\n"
-    textik+= " - - - next |-> posune Vás na další stranu\n - - - next 6 |-> posune Vás o 6 stran od začátku\n - - Pokud zadáte číslo menší jak 1, tak program ohlásí chybu\n - - Pokud zadáte povel na přechod na stranu neexistující, tak se program pokusí k ní dostat co nejblíže a ohlásí chybu\n"
-    textik+= " - [bold blue]previous [číslo (tento parametr je volitelný)][/bold blue]\n - - Pokud je více stran k zobrazení všech položek v aktuální lokaci, tak se můžete díky tomuto příkazu posunout na předchozí stranu, či o více stran podle čísla, které zadáte, příklady parametrů ->\n"
-    textik+= " - - - previous |-> posune Vás na předchozí stranu|n - - - previous 6 |-> posune Vás o 6 stran k začátku\n - - Pokud zadáte číslo menší jak 1, tak program ohlásí chybu\n - - Pokud zadáte povel na přecho na stranu neexistující, tak program se program pokusí k ní dostat co nejblíže a ohlásí chybu\n"
-    textik+= " - [bold blue]remove[/bold blue]\n - - Smaže aktuální označené položky - soubory, složky i soubory a složky vnořené.\n - - Zjistí počet úspěšných a chybných odstranění a vypíše informace o výsledku příkazu.\n"
-    textik+= " - [bold blue]copy[/bold blue]\n - - Zkopíruje označené položky do aktuálního adresáře - soubory, složky i soubory a složky vnořené.\n - - Zjistí počet úspěšných a chybných kopírovaní a vypíše informace o výsledku příkazu.\n"
-    textik+= " - [bold blue]move[/bold blue]\n - - Přesune označené položky do aktuálního adresáře - soubory, složky i soubory a složky vnořené.\n - - Zjistí počet úspěšných a chybných přesunutí a vypíše informace o výsledku příkazu.\n"
-    textik+= " - [bold blue]makedir !název (povinný parametr)![/bold blue]\n - - Vytvoří v aktuálním adresáři nový adresář se zadaným názvem od uživatele, příklady parametrů ->\n - - - makedir NewFolder |-> vytvoří v aktuálním adresáři nový adresář s názvem NewFolder\n - - Vypíše informace o výsledku provedení příkazu.\n"
-    textik+= " - [bold blue]rename !nový_název (povinný parametr)! [!kde začátek_počítadla změna_počítadla minimální_počet_míst přípona_nebo_koncovka (polopovinné parametry)!][/bold blue]\n"
-    textik+= " - - Přejmenuje vybraný soubor či složku, nebo vybrané soubory či složky. Přejmenovává položky v seznamu poznačených.\n - - Pokud je pouze jedna položka k přejmenování je povinný parametr pouze nový_název, jinak jsou povinné i další parametry.\n"
-    textik+= " - - nový_název - jedna část názvu, kde - after/before - pozice počítadla před či za novým_názvem, začátek_počítadla - startovní index\n - - změna_počítadla - o jaké číslo se bude počítadlo pravidelně měnit, minimální_počet_míst - minimální počet míst počítadla, přípona_nebo_koncovka - název připojený ke konci nového názvu\n"
-    textik+= " - - Zjistí počet chybných a úspěšných přejmenování a vypíše výsledek příkazu a zda nedošlo k chybě, príklady parametrů ->\n - - - rename ahoj.txt |-> pokud pouze jeden soubor je vybrán tak bude přejmenován na název ahoj.txt\n"
-    textik+= " - - - rename obrazek after 0 1 4 .jpg |-> všechny položky které jsou poznačené budou přejmenovány takto - obrazek0000.jpg, obrazek0001.jpg, ..........\n"
-    textik+= " - [bold blue]copyrename !nový_název (povinný parametr)! [!kde začátek_počítadla změna_počítadla minimální_počet_míst přípona_nebo_koncovka (polopovinné parametry)!][/bold blue]\n"
-    textik+= " - - Zkopíruje a přejmenuje vybraný soubor či složku, nebo vybrané soubory či složky. Kopíruje a přejmenovává položky v seznamu poznačených do aktuálního adresáře.\n - - Pokud je pouze jedna položka ke kopírování a přejmenování je povinný parametr pouze nový_název, jinak jsou povinné i další parametry.\n"
-    textik+= " - - nový_název - jedna část názvu, kde - after/before - pozice počítadla před či za novým_názvem, začátek_počítadla - startovní index\n - - změna_počítadla - o jaké číslo se bude počítadlo pravidelně měnit, minimální_počet_míst - minimální počet míst počítadla, přípona_nebo_koncovka - název připojený ke konci nového názvu\n"
-    textik+= " - - Zjistí počet chybných a úspěšných kopírování a přejmenování a vypíše výsledek příkazu a zda nedošlo k chybě, príklady parametrů ->\n - - - copyrename ahoj.txt |-> pokud pouze jeden soubor je vybrán tak bude kopírován do aktuálního adresáře a přejmenován na název ahoj.txt\n"
-    textik+= " - - - copyrename obrazek after 0 1 4 .jpg |-> všechny položky které jsou poznačené budou zkopírovány do aktuálního adresáře a přejmenovány takto - obrazek0000.jpg, obrazek0001.jpg, ..........\n"
-    textik+= " - [bold blue]search !hledaný_výraz (povinný parametr)![/bold blue]\n - - Vyhledá soubory či složky obsahující hledaný_výraz v aktuálním umístění a v jeho podadresářích, příklady parametrů ->\n"
-    textik+= " - - Průběžně informuje o vyhledávání, má kontrolu vstupu uživatele. Jako výsledek zobrazí seznam nalezených položek\n - - - search .txt |-> vyhledá všechny soubory v aktuálním adresáři a i v podadresářích končící na .txt\n"
-    textik+= " - [bold blue]dirsize !číslo (povinný parametr)![/bold blue]\n - - Zjistí a vypíše velikost zadané složky, příklady parametrů ->\n - - - dirsize 6  |-> zjistí a vypíše velikost adresáře na indexu číslo 6\n"
-    textik+= " - [bold blue]sort !dle_čeho_má_řadit vzestupně_sestupně (povinný parametr)![/bold blue]\n - - Nastaví jakým způsobem se řadí a zobrazují zobrazené položky\n - - dle_čeho_se_má_řadit - řazení dle jména - name, výchozí zobrazení - none, dle velikosti - size, dle času založení - created, dle času poslední úpravy - changed\n"
-    textik+= " - - vzestupně_sestupně - vzestupně - up, sestupně - down, příklady parametrů ->\n - - - sort name down - seřadí sestupně dle jmen\n"
-    
-    rprint(Panel(textik, title="Seznam příkazů a vysvětlení", style="bold green"))
-    
+    clear()
+    rprint(Panel(Text(localization.get_text('app_help_leek_title'), style="bold white", justify="center")))
+    text = Text(localization.get_text('app_help_part_one'), style="bold yellow", justify='full')
+    rprint(Panel(text, title=localization.get_text('app_help_basic_title'),style="bold blue"))
+    rprint(Panel(localization.get_text('app_help_part_two'), title=localization.get_text('app_help_command_list_leek_title'), style="bold green"))
     input(localization.get_text('press_enter_to_hide'))
 
-def print_page():
+def print_page(localization : Localization):
     r"""
     Vypíše informační text zobrazující informace
     o počtu stran, a na které stránce teď jsme
@@ -729,33 +679,40 @@ def print_page():
     a zobrazitelných položek
     """
     
-    rprint("[bold blue]Stránka " + str(page) + " z " + str(max_page) + ". Celkem " + str(len(viewable)) + " souborů/složek/disků. Zobrazeno " + str(len(visible)) + ".[/bold blue]")
+    rprint(localization.get_text('list_info').format(page, max_page, len(viewable), len(visible)))
 
-def print_sortinfo():
+def print_sortinfo(cfg : Configuration, localization : Localization):
     r"""
     Vypíše informace o aktuálním nastavení řazení
     položek v aktuálním zobrazení
     """
     
-    textik = "[bold yellow]Výpis seřazen dle "
-    match sort_key:
+    match cfg.get_cfg('sort_key'):
         case "none":
-            textik+="základního zjištění "
+            if cfg.get_cfg('sort_direction')=="up":
+                rprint(localization.get_text('none_up'))
+            if cfg.get_cfg('sort_direction')=="down":
+                rprint(localization.get_text('none_down'))
         case "name":
-            textik+="názvu položek "
+            if cfg.get_cfg('sort_direction')=="up":
+                rprint(localization.get_text('name_up'))
+            if cfg.get_cfg('sort_direction')=="down":
+                rprint(localization.get_text('name_down'))
         case "created":
-            textik+="času vytvoření položek "
+            if cfg.get_cfg('sort_direction')=="up":
+                rprint(localization.get_text('created_up'))
+            if cfg.get_cfg('sort_direction')=="down":
+                rprint(localization.get_text('created_down'))
         case "size":
-            textik+="velikosti položek "
+            if cfg.get_cfg('sort_direction')=="up":
+                rprint(localization.get_text('size_up'))
+            if cfg.get_cfg('sort_direction')=="down":
+                rprint(localization.get_text('size_down'))
         case "changed":
-            textik+="času poslední změny položek "
-    match sort_direction:
-        case "up":
-            textik+="vzestupně.[/bold yellow]"
-        case "down":
-            textik+="sestupně.[/bold yellow]"
-            
-    rprint(textik)
+            if cfg.get_cfg('sort_direction')=="up":
+                rprint(localization.get_text('changed_up'))
+            if cfg.get_cfg('sort_direction')=="down":
+                rprint(localization.get_text('changed_down'))
 
 def create_table(cfg : Configuration, localization : Localization):
     r"""
@@ -827,7 +784,7 @@ def timedate(seconds) -> str:
     
     return datetime.fromtimestamp(seconds).strftime("%d/%m/%Y-%H:%M:%S")
 
-def create_viewable():
+def create_viewable(cfg : Configuration):
     r"""
     Vytvoří dictionary zobrazitelných položek v aktuálním
     zvoleném adresáři, volá funkci get_file_as_dictionary(), která
@@ -853,17 +810,17 @@ def create_viewable():
             return
         for i in range(len(files)):
             viewable.append(get_file_record_as_dictionary(files, i))
-    do_sort()
+    do_sort(cfg)
 
-def do_sort():
+def do_sort(cfg : Configuration):
     r"""
     Zajistí seřazení zobrazitelných položek dle vstupu uživatele pro
     Funkci sort pro zobrazení položek umístění 
     """
     
-    global viewable, sort_key, sort_direction
+    global viewable
     
-    match sort_key:
+    match cfg.get_cfg('sort_key'):
         case "none":
             return
         case "name":
@@ -875,7 +832,7 @@ def do_sort():
         case "changed":
             viewable.sort(key=operator.itemgetter("changed"))
     
-    match sort_direction:
+    match cfg.get_cfg('sort_direction'):
         case "down":
             viewable.reverse()
             
@@ -947,7 +904,7 @@ def go_drive():
             return
     errors.append("drive_does_not_exist")            
 
-def calculate_pages():
+def calculate_pages(cfg : Configuration):
     r"""
     Zjistí úplný počet stránek listů zobrazení
     Uloží jej do proměnné názvu max_page
@@ -955,10 +912,10 @@ def calculate_pages():
     
     global rows, viewable, visible, page, max_page
     max_page = 1
-    while len(viewable)>(max_page*rows):
+    while len(viewable)>(max_page*cfg.get_cfg('rows')):
         max_page = max_page + 1
 
-def create_visible():
+def create_visible(cfg : Configuration):
     r"""
     Vytvoří dictionary viditelných položek pro zobrazení
     na aktuální zvolené stránce pomocí listů
@@ -966,11 +923,11 @@ def create_visible():
     
     global viewable, visible
     j = 0
-    calculate_pages()
+    calculate_pages(cfg)
     visible = []
     for i in range(len(viewable)):
-        if not i<((rows*page)-rows):
-            if i<rows*page:
+        if not i<((cfg.get_cfg('rows')*page)-cfg.get_cfg('rows')):
+            if i<cfg.get_cfg('rows')*page:
                 visible.append(viewable[i].copy())
                 visible[j]["id"] = j+1
                 j+=1
@@ -1237,13 +1194,13 @@ def do_copyrename(localization : Localization):
             return
     info.append("copyrename_successful")
 
-def check_get_rows():
+def check_get_rows(cfg : Configuration):
     r"""
     Funkce, která zkontrojue správnost vstupu pro funkci rows
     a zároveň i nové rows nastaví
     """
     
-    global user_input, info, rows, errors, page
+    global user_input, info, errors, page
     user_input.pop(0)
     new_rows = 0
     if len(user_input)!=1:
@@ -1256,7 +1213,7 @@ def check_get_rows():
         if new_rows<10:
             errors.append("rows_bad_input")
         else:
-            rows = new_rows
+            cfg.set_cfg('rows', new_rows)
             info.append("rows_success")
             page = 1
 
@@ -1336,25 +1293,25 @@ def do_search(localization : Localization):
         location = "search"
     info.append("search_successful")
     
-def check_and_set_sort():
+def check_and_set_sort(cfg : Configuration):
     r"""
     Zkontroluje jestli uživatel zadal správný vstup pro funkci sort,
     Pokud ne nastaví původní hodnoty sortu
     """
     
-    global sort_key, sort_direction, errors, user_input
+    global errors, user_input
     user_input.pop(0)
-    sort_key_backup = sort_key
-    sort_direction_backup = sort_direction
+    sort_key_backup = cfg.get_cfg('sort_key')
+    sort_direction_backup = cfg.get_cfg('sort_direction')
     if len(user_input)==2:
-        sort_key = str(user_input[0])
-        if sort_key!="none" and sort_key!="name" and sort_key!="size" and sort_key!="created" and sort_key!="changed":
-            sort_key = sort_key_backup
+        cfg.set_cfg('sort_key', str(user_input[0]))
+        if cfg.get_cfg('sort_key')!="none" and cfg.get_cfg('sort_key')!="name" and cfg.get_cfg('sort_key')!="size" and cfg.get_cfg('sort_key')!="created" and cfg.get_cfg('sort_key')!="changed":
+            cfg.set_cfg('sort_key', sort_key_backup)
             errors.append("sort_bad_input")
             return
-        sort_direction = str(user_input[1])
-        if sort_direction!="up" and sort_direction!="down":
-            sort_direction = sort_direction_backup
+        cfg.set_cfg('sort_direction', str(user_input[1]))
+        if cfg.get_cfg('sort_direction')!="up" and cfg.get_cfg('sort_direction')!="down":
+            cfg.set_cfg('sort_direction', sort_direction_backup)
             errors.append("sort_bad_input")
             return
     else:
@@ -1495,15 +1452,15 @@ def clear():
 
     os.system('cls')
 
-def refresh_all():
+def refresh_all(cfg : Configuration):
     r"""
     Zaktualizuje seznam disků, vytvoří seznam zobrazitelných položek a položek zobrazených, zobrazení aktualizuje
     """
 
     global drives
     drives = get_list_of_drives()
-    create_viewable()
-    create_visible()
+    create_viewable(cfg)
+    create_visible(cfg)
 
 def size_divider(cfg : Configuration) -> int:
     match cfg.get_cfg('size_unit'):
@@ -1550,13 +1507,13 @@ if __name__ == "__main__":
     localization = Localization(config)
     
     while True:
-        refresh_all()
+        refresh_all(config)
         clear()
         create_table(config, localization)
 
         rprint(table)
-        print_page()
-        print_sortinfo()
+        print_page(localization)
+        print_sortinfo(config, localization)
         print_info_error_message(config, localization, errors, info)
         errors = []
         info = []
@@ -1587,7 +1544,7 @@ if __name__ == "__main__":
                     if check_to_search():
                         do_search()
                 case "sort": 
-                    check_and_set_sort()
+                    check_and_set_sort(config)
                 case "showselect": 
                     pre_select = location
                     location = "select"
@@ -1632,7 +1589,7 @@ if __name__ == "__main__":
                     if check_to_open():
                         open()
                 case "rows":
-                    check_get_rows()
+                    check_get_rows(config)
                 case "info":
                     print_app_info(localization)
                 case "dirsize":

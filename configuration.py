@@ -9,8 +9,11 @@ class Configuration:
         self.path = f"{os.getenv('APPDATA')}/Leek/config.txt"
         self.cfg = {
             'save_cfg' : False,
-            'row_size' : 40,
-            'locale' : 'cs'
+            'rows' : 40,
+            'locale' : 'cs',
+            'size_unit': 'KB',
+            'sort_key': 'none',
+            'sort_direction' : 'up'
         }
     
     def get_cfg(self, key : str) -> any:
