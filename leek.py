@@ -29,6 +29,8 @@ class CFG:
     VERSION = "1.2.1"
     AUTHOR = "Otakar Kočí"
     DATE = "08/08/2022"
+    WEBPAGE = ""
+    GITHUB = ""
     PYTHON_VERSION = "3.10 (3.10.6)"
     RICH_VERSION = "12.5.1"
     PYINSTALLER_VERSION = "5.3"
@@ -656,7 +658,7 @@ def print_app_info(localization : Localization):
     """
     
     clear()
-    text = localization.get_text('app_info').format(CFG.VERSION, CFG.AUTHOR, CFG.DATE, CFG.PYTHON_VERSION, CFG.RICH_VERSION, CFG.PYINSTALLER_VERSION, CFG.UPX_VERSION, CFG.ZIP7_VERSION)
+    text = localization.get_text('app_info').format(CFG.VERSION, CFG.AUTHOR, CFG.DATE, CFG.WEBPAGE, CFG.GITHUB, CFG.PYTHON_VERSION, CFG.RICH_VERSION, CFG.PYINSTALLER_VERSION, CFG.UPX_VERSION, CFG.ZIP7_VERSION)
     rprint(Panel.fit(text, title=localization.get_text('app_info_leek_title'), style='bold magenta'))
     input(localization.get_text('press_enter_to_hide'))
 
@@ -1216,6 +1218,63 @@ def check_get_rows(cfg : Configuration):
             cfg.set_cfg('rows', new_rows)
             info.append("rows_success")
             page = 1
+            
+def check_get_locale(cfg : Configuration, localization : Localization) -> None:
+    r"""
+    Funkce, která zkontroluje vstup pro funkci locale a nastaví novou hodnotu pokud je vstup správný
+    """
+    
+    global user_input, info, errors
+    user_input.pop(0)
+    if len(user_input)!=1:
+        errors.append("locale_bad_input")
+    else:
+        locale_exists = False
+        new_locale = str(user_input[0])
+        for existing_locale in localization.locales:
+            if new_locale == existing_locale:
+                locale_exists = True
+                break
+        if locale_exists:
+            cfg.set_cfg('locale', new_locale)
+            info.append("locale_successful")
+        else:
+            errors.append("locale_bad_input")
+
+def check_get_saveconfig(cfg : Configuration) -> None:
+    r"""
+    Funkce, která zkontroluje vstup pro funkci saveconfig a nastaví novou hodnotu pokud je vstup správný
+    """
+    
+    global user_input, info, errors
+    user_input.pop(0)
+    if len(user_input)!=1:
+        errors.append("saveconfig_bad_input")
+    else:
+        if user_input[0] == "true":
+            cfg.set_cfg('save_cfg', True)
+            info.append("saveconfig_successful")
+        elif user_input[0]  == "false":
+            cfg.set_cfg('save_cfg', False)
+            info.append("saveconfig_successful")
+        else:
+            errors.append("saveconfig_bad_input")
+            
+def check_get_sizeunit(cfg : Configuration) -> None:
+    r"""
+    Funkce, která zkontroluje vstup pro funkci sizeunit a nastaví novou hodnotu pokud je vstup správný
+    """
+    
+    global user_input, info, errors
+    user_input.pop(0)
+    if len(user_input)!=1:
+        errors.append("sizeunit_bad_input")
+    else:
+        if user_input[0] == "B" or user_input[0] == "KB" or user_input[0] == "MB" or user_input[0] == "GB" or user_input[0] == "TB":
+            cfg.set_cfg('size_unit', user_input[0])
+            info.append("sizeunit_successful")
+        else:
+            errors.append("sizeunit_bad_input")
 
 def check_to_search() -> bool:
     r"""
@@ -1480,7 +1539,7 @@ def print_info_error_message(cfg : Configuration, localization : Localization, e
     for info_key in info_keys:
         match info_key:
             case 'dirsize_success':
-                rprint(localization.get_text(info_key).format(to_open, int(dirsize/size_divider(cfg)), cfg.get_cfg['size_unit']))
+                rprint(localization.get_text(info_key).format(to_open, int(dirsize/size_divider(cfg)), cfg.get_cfg('size_unit')))
             case 'remove_successful':
                 rprint(localization.get_text(info_key).format(successful, failed))
             case 'copy_successful':
@@ -1489,6 +1548,8 @@ def print_info_error_message(cfg : Configuration, localization : Localization, e
                 rprint(localization.get_text(info_key).format(successful, failed))
             case 'copyrename_successful':
                 rprint(localization.get_text(info_key).format(successful, failed))
+            case 'print_locales':
+                rprint(localization.get_text(info_key).format(localization.get_locales()))
             case _:   
                 localized_message = localization.get_text(info_key)
                 if localized_message=='none':
@@ -1505,6 +1566,8 @@ if __name__ == "__main__":
     """
     config = Configuration()
     localization = Localization(config)
+    info.append(config.load_cfg())
+    info.append(localization.load_localization())
     
     while True:
         refresh_all(config)
@@ -1598,6 +1661,15 @@ if __name__ == "__main__":
                 case "makedir":
                     if check_new_dir_name():
                         make_dir()
+                case "locales":
+                    info.append('print_locales')
+                case "locale":
+                    check_get_locale(config, localization)
+                case "saveconfig":
+                    check_get_saveconfig(config)
+                case "sizeunit":
+                    check_get_sizeunit(config)
                 case _:
                     errors.append("unknown_command")
+    rprint(localization.get_text(config.save_cfg()))
     rprint(localization.get_text('bye_message'))

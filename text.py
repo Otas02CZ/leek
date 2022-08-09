@@ -58,6 +58,12 @@ initial_localization = {
         'copyrename_no_copy_in_search' : '[bold red]Ve vyhledaných položkách zkrátka nelze kopírovati s přejmenováním[/bold red]',
         'copy_no_copy_in_search' : '[bold red]Ve vyhledaných položkách zkrátka nelze kopírovati[/bold red]',
         'make_dir_no_search' : '[bold red]Nelze vytvořit složku ve vyhledaných položkách[/bold red]',
+        'locale_bad_input' : '[bold red]Zadali jste špatný vstup pro funkci locale, nebo jste zadali neexistující lokalizaci.[/bold red]',
+        'saveconfig_bad_input' : '[bold red]Zadali jste špatný vstup pro funkci saveconfig.[/bold red]',
+        'sizeunit_bad_input' : '[bold red]Zadali jste špatný vstup pro funkci sizeunit.[/bold red]',
+        '' : '',
+        '' : '',
+        '' : '',
         '' : '',
         # succes messages
         'select_success' : '[bold green]Soubory a složky úspěšně poznačeny[/bold green]',
@@ -82,6 +88,14 @@ initial_localization = {
         'rename_successful' : '[bold green]Úspěšně přejmenováno [/bold green][bold blue]{}[/bold blue][bold green] položek, selhalo přejmenování [/bold green][bold red]{}[/bold red][bold green] položek[/bold green]',
         'copyrename_successful' : '[bold green]Úspěšně zkopírováno a přejmenováno [/bold green][bold blue]{}[/bold blue][bold green] položek, selhalo kopírování a přejmenování [/bold green][bold red]{}[/bold red][bold green] položek[/bold green]',
         'search_successful' : '[bold green]Výsledky vyhledávání[/bold green]',
+        'locale_successful' : '[bold green]Lokalizace byla úspěšně změněna[/bold green]',
+        'available_localization_loaded' : '[bold blue]Dostupné lokalizace byly načteny[/bold blue]',
+        'cannot_load_localization' : '[bold red]Selhalo načítání existujících dodatkových lokalizací[/bold red]',
+        'saveconfig_successful' : '[bold green]Nastavení ukládání konfigurace aplikace bylo úspěšně změněno.[/bold green]',
+        'sizeunit_successful' : '[bold green]Nastavení jednotek velikosti bylo úspěšně změněno.[/bold green]',
+        '' : '',
+        '' : '',
+        '' : '',
         '' : '',
         # other general
         'insert_cmd' : '[bold]Zadej příkaz [/bold](help)',
@@ -120,6 +134,19 @@ initial_localization = {
         'changed_up' : '[bold yellow]Výpis seřazen dle času poslední změny položek vzestupně.[/bold yellow]',
         'changed_down' : '[bold yellow]Výpis seřazen dle času poslední změny položek sestupně.[/bold yellow]',
         'list_info' : '[bold blue]Stránka {} z {}. Celkem {} souborů/složek/disků. Zobrazeno {}.[/bold blue]',
+        'cannot_load' : '[bold blue]Nelze načíst nastavení aplikace, pokud chcete nastavení ukládat, použijte příkaz [/bold blue]saveconfig true',
+        'load_successful' : '[bold blue]Úspěšně se načetlo nastavení aplikace[/bold blue]',
+        'cannot_save' : '[bold red]Nelze uložit nastavení aplikace[/bold red]',
+        'save_successful' : '[bold blue]Úspěšně se uložilo nastavení aplikace[/bold blue]',
+        'not_saving' : '[bold blue]Nastavení aplikace se neukládá[/bold blue]',
+        'print_locales' : '[bold green]Dostupné jazyky jsou : {}\nPokud chcete přidat další jazyky postupujte dle návodu ve wiki na githubové stránce projektu\nPokud chcete načítat dodatečné jazyky musíte mít zapnuto ukládání konfigurace.',
+        '' : '',
+        '' : '',
+        '' : '',
+        '' : '',
+        '' : '',
+        '' : '',
+        '' : '',
         'app_info' : 
             '''
 [bold green]----------------------------------------------------------------[/bold green]
@@ -130,11 +157,16 @@ initial_localization = {
 [bold magenta]autor: [/bold magenta][bold white]{}[/bold white]
 [bold green]vytvořeno: [/bold green][bold white]{}[/bold white]
 [bold green]----------------------------------------------------------------[/bold green]
+[bold magenta]Projektová stránka programu: [/bold magenta][bold blue]{}[/bold blue]
+[bold yellow]Stránka projektu na Githubu: [/bold yellow][bold green]{}[/bold green]
 [bold red]Tento program využívá Python {} a Rich {}[/bold red]
 [bold magenta]Balení do exe souboru zajišťuje Pyinstaller {}[/bold magenta]
 [bold blue]Komprimaci exe souboru zajišťuje UPX {}[/bold blue]
 [bold green]Komprimaci zip archivů zase zajišťuje 7-zip {}[/bold green]
 [bold blue]Velice děkuji všem tvůrcům projektů, jejichž práci využívám :smiley:[/bold blue]
+[bold magenta]Pokud máte návrh na zlepšení programu, nové funkce,
+změny, nebo jste našli chybu, tak neváhejte navštívit githubovou
+stránku projektu a o své názory se podělit[/bold magenta]
 [bold green]----------------------------------------------------------------[/bold green]
             ''',
         'app_info_leek_title' : 'Info o aplikaci Leek',
@@ -250,7 +282,26 @@ Leek (pórek) je jednoduchý konzolový správce souborů ovládaný krátkými 
    - Nastaví jakým způsobem se řadí a zobrazují zobrazené položky
    - dle_čeho_se_má_řadit - řazení dle jména - name, výchozí zobrazení - none, dle velikosti - size, dle času založení - created, dle času poslední úpravy - changed
    - vzestupně_sestupně - vzestupně - up, sestupně - down, příklady parametrů ->
-     - sort name down - seřadí sestupně dle jmen.    
+     - sort name down - seřadí sestupně dle jmen. 
+ - [bold blue]locales[/bold blue]
+   - Zobrazí seznam všech dostupných vestavěných lokalizací a pokud máte povolené ukládání konfigurací, tak i všech dodatkových lokalizací.
+   - Dodatkové lokalizace se mohou vložit do adresáře %APPDATA%(Roaming)/Leek/locales/ a to ve formátu jednotlivých dodatečných jazyků uložených
+   - jako python dictionary ve tvaru {"locale_name" : {locale keys and data}} v souboru s názvem locale_name a příponou .llf - en.llf
+   - Pro více informací navštivte projektové stránky programu.
+ - [bold blue]locale !locale_name (povinný parametr)![/bold blue]
+   - Změní lokalizaci programu do uvedeného jazyka, příklady parametrů ->
+     - locale en |-> změní lokalizaci do jazyka se zkratkou en
+   - V případě chybného zavolání, nebo zadání neexistující jazyka vypíše chybu.
+- [bold blue]saveconfig !setting (povinný parametr)![/bold blue]
+   - Nastaví zda se může ukládat nastavení programu pro použití při příštím startu, zapnutí zároveň umožňuje používat dodatečné lokalizace.
+   - setting - true/false, program vždy ukládá nastavení při zavření pomocí příkazu exit, příklady parametrů ->
+     - saveconfig true |-> nastavení se budou ukládat, dodatečné lokalizace jsou povoleny
+   - V případě špatného vstupu funkce vypíše chybové hlášení.
+- [bold blue]sizeunit !new_unit (povinný parametr)![/bold blue]
+   - Nastaví jednotku velikosti dat v rámci celého programu
+   - new_unit - B/KB/MB/GB/TB, příklady parametrů ->
+     - sizeunit KB |-> nastaví jednotku zobrazování velikosti dat na KB
+   - V případě zadání špatných parametrů funkce vypíše chybové hlášení.   
             ''',
         'app_help_leek_title' : 'Vítejte v podpoře programu Leek (no leak)',
         'app_help_command_list_leek_title' : 'Seznam příkazů a vysvětlení',
