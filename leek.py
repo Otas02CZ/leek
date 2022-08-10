@@ -10,6 +10,7 @@
 
 # IMPORTY ##########################################
 import os
+import pathlib
 import shutil
 import operator
 from rich import print as rprint
@@ -369,7 +370,7 @@ def open():
     Pokud se jedná o soubor otevře jej ve výchozí aplikaci win
     jinak se přesune do složky a zobrazí její obsah
     """
-    
+     
     global location, info, to_open, errors, drives, page
     new_location = ""
     if to_open>len(visible) or to_open<1:
@@ -391,7 +392,7 @@ def open():
             page = 1
         elif os.path.isfile(new_location):
             os.startfile(new_location)
-            info.append("open_file_succes")
+            info.append("open_file_success")
         else:
             errors.append("file_does_not_exist")
 
@@ -495,6 +496,7 @@ def do_remove(localization : Localization):
                 failed+=1
     selected = []
     info.append("remove_successful")
+    input(localization.get_text('press_enter_to_hide'))
 
 def do_copy(localization : Localization):
     r"""
@@ -541,6 +543,7 @@ def do_copy(localization : Localization):
                 rprint(localization.get_text('nonexistent_path').format(selected[i]))
                 failed+=1
     info.append("copy_successful")
+    input(localization.get_text('press_enter_to_hide'))
 
 def do_move(localization : Localization):
     r"""
@@ -573,6 +576,7 @@ def do_move(localization : Localization):
                 failed+=1
     info.append("move_successful")
     selected = []
+    input(localization.get_text('press_enter_to_hide'))
 
 def check_to_up() -> bool:
     r"""
@@ -723,8 +727,8 @@ def create_table(cfg : Configuration, localization : Localization):
     
     global table
     table = Table(title=location)
-    table.add_column(localization.get_text('id'), justify="center", style="blue", no_wrap=True)
-    table.add_column(localization.get_text('file_or_folder_name'), justify="left", style="green", no_wrap=True)
+    table.add_column(localization.get_text('id'), justify="center", style="blue", no_wrap=True, min_width=4)
+    table.add_column(localization.get_text('file_or_folder_name'), justify="left", style="green")
     table.add_column(localization.get_text('size').format(cfg.get_cfg('size_unit')), justify="center", style="yellow", no_wrap=True)
     table.add_column(localization.get_text('created'), justify="center", style="white", no_wrap=True)
     table.add_column(localization.get_text('modified'), justify="center", style="cyan", no_wrap=True)
@@ -738,7 +742,7 @@ def create_table(cfg : Configuration, localization : Localization):
             if os.path.isdir(location + "\\" + visible[i]["name"]):
                 table.add_row(str(visible[i]["id"]), visible[i]["name"], "-", timedate(visible[i]["created"]), timedate(visible[i]["changed"]), str(visible[i]["rights"]))
             else:
-                table.add_row(str(visible[i]["id"]), visible[i]["name"], str(visible[i]["size"]), timedate(visible[i]["created"]), timedate(visible[i]["changed"]), str(visible[i]["rights"]))
+                table.add_row(str(visible[i]["id"]), visible[i]["name"], str(visible[i]["size"]/size_divider(cfg)), timedate(visible[i]["created"]), timedate(visible[i]["changed"]), str(visible[i]["rights"]))
 
 def get_file_record_as_dictionary(files, i):
     r"""
@@ -1053,29 +1057,41 @@ def do_rename(localization : Localization):
                 new_name = ""
                 match r_place:
                     case "before":
-                                    digits_to_append = r_n_digit - len(str(counter))
+                                    if r_n_digit == 0:
+                                        digits_to_append = 0
+                                    else:
+                                        digits_to_append = r_n_digit - len(str(counter))
                                     if digits_to_append<0: digits_to_append = 0
                                     new_name = str(counter)
                                     while digits_to_append>0:
                                         new_name = "0" + new_name
                                         digits_to_append-=1
                                     counter+=r_increment
-                                    if r_new_name!="\\none\\":
+                                    if r_new_name!="|none|":
                                         new_name+=r_new_name
-                                    if r_file_type!="\\none\\":
-                                        new_name+=r_file_type
+                                    if r_file_type!="|none|":
+                                        if r_file_type == "|base|":
+                                            new_name+=pathlib.Path(selected[i]).suffix
+                                        else: 
+                                            new_name+=r_file_type
                     case "after":
-                                    if r_new_name!="\\none\\":
-                                        new_name+=r_new_name
-                                    digits_to_append = r_n_digit - len(str(counter))
+                                    if r_n_digit == 0:
+                                        digits_to_append = 0
+                                    else:
+                                        digits_to_append = r_n_digit - len(str(counter))
                                     if digits_to_append<0: digits_to_append = 0
                                     new_name = str(counter)
                                     while digits_to_append>0:
                                         new_name = "0" + new_name
                                         digits_to_append-=1
+                                    if r_new_name!="|none|":
+                                        new_name = r_new_name + new_name
                                     counter+=r_increment
-                                    if r_file_type!="\\none\\":
-                                        new_name+=r_file_type
+                                    if r_file_type!="|none|":
+                                        if r_file_type == "|base|":
+                                            new_name+=pathlib.Path(selected[i]).suffix
+                                        else: 
+                                            new_name+=r_file_type
                 if rename_file_or_directory(selected[i], new_name):
                     successful+=1
                     rprint(localization.get_text('item_renamed').format(selected[i], new_name))
@@ -1086,6 +1102,7 @@ def do_rename(localization : Localization):
         else:
             errors.append("rename_advanced_but_one")
     selected = []
+    input(localization.get_text('press_enter_to_hide'))
 
 def do_copyrename(localization : Localization):
     r"""
@@ -1117,7 +1134,7 @@ def do_copyrename(localization : Localization):
                         failed+=1
                     elif copy_file(selected[0], location+"\\"+r_new_name):
                         successful+=1
-                        rprint(localization.get_text('item_copyrenamed').format(selected[0], r_new_name))
+                        rprint(localization.get_text('item_copyrenamed').format(selected[0], location+"\\"+r_new_name))
                     else:
                         rprint(localization.get_text('unable_to_copyrename_item').format(selected[0], location, r_new_name))
                         failed+=1
@@ -1127,7 +1144,7 @@ def do_copyrename(localization : Localization):
                         failed+=1
                     elif copy_entire_directory(selected[0], location+"\\"+r_new_name):
                         successful+=1
-                        rprint(localization.get_text('item_copyrenamed').format(selected[0], r_new_name))
+                        rprint(localization.get_text('item_copyrenamed').format(selected[0], location+"\\"+r_new_name))
                     else:
                         rprint(localization.get_text('unable_to_copyrename_item').format(selected[0], location, r_new_name))
                         failed+=1
@@ -1144,36 +1161,48 @@ def do_copyrename(localization : Localization):
                 new_name = ""
                 match r_place:
                     case "before":
-                                    digits_to_append = r_n_digit - len(str(counter))
+                                    if r_n_digit == 0:
+                                        digits_to_append = 0
+                                    else:
+                                        digits_to_append = r_n_digit - len(str(counter))
                                     if digits_to_append<0: digits_to_append = 0
                                     new_name = str(counter)
                                     while digits_to_append>0:
                                         new_name = "0" + new_name
                                         digits_to_append-=1
                                     counter+=r_increment
-                                    if r_new_name!="\\none\\":
+                                    if r_new_name!="|none|":
                                         new_name+=r_new_name
-                                    if r_file_type!="\\none\\":
-                                        new_name+=r_file_type
+                                    if r_file_type!="|none|":
+                                        if r_file_type == "|base|":
+                                            new_name+=pathlib.Path(selected[i]).suffix
+                                        else: 
+                                            new_name+=r_file_type
                     case "after":
-                                    if r_new_name!="\\none\\":
-                                        new_name+=r_new_name
-                                    digits_to_append = r_n_digit - len(str(counter))
+                                    if r_n_digit == 0:
+                                        digits_to_append = 0
+                                    else:
+                                        digits_to_append = r_n_digit - len(str(counter))
                                     if digits_to_append<0: digits_to_append = 0
                                     new_name = str(counter)
                                     while digits_to_append>0:
                                         new_name = "0" + new_name
                                         digits_to_append-=1
+                                    if r_new_name!="|none|":
+                                        new_name = r_new_name + new_name
                                     counter+=r_increment
-                                    if r_file_type!="\\none\\":
-                                        new_name+=r_file_type
+                                    if r_file_type!="|none|":
+                                        if r_file_type == "|base|":
+                                            new_name+=pathlib.Path(selected[i]).suffix
+                                        else: 
+                                            new_name+=r_file_type
                 if os.path.exists(selected[i]):
                     if os.path.isfile(selected[i]):
                         if os.path.exists(location+"\\"+new_name):
                             rprint(localization.get_text('copy_item_already_exists').format(new_name, location))
                             failed+=1
                         elif copy_file(selected[i], location+"\\"+new_name):
-                            rprint(localization.get_text('item_copyrenamed').format(selected[i], new_name))
+                            rprint(localization.get_text('item_copyrenamed').format(selected[i], location+"\\"+new_name))
                             successful+=1
                         else:
                             rprint(localization.get_text('unable_to_copyrename_item').format(selected[i], location, new_name))
@@ -1183,7 +1212,7 @@ def do_copyrename(localization : Localization):
                             rprint(localization.get_text('copy_folder_already_exists').format(new_name, location))
                             failed+=1
                         elif copy_entire_directory(selected[i], location+"\\"+new_name):
-                            rprint(localization.get_text('item_copyrenamed').format(selected[i], new_name))
+                            rprint(localization.get_text('item_copyrenamed').format(selected[i], location+"\\"+new_name))
                             successful+=1
                         else:
                             rprint(localization.get_text('unable_to_copyrename_item').format(selected[i], location, new_name))
@@ -1195,6 +1224,7 @@ def do_copyrename(localization : Localization):
             errors.append("coopyrename_advanced_but_one")
             return
     info.append("copyrename_successful")
+    input(localization.get_text('press_enter_to_hide'))
 
 def check_get_rows(cfg : Configuration):
     r"""
@@ -1588,18 +1618,14 @@ if __name__ == "__main__":
                         check_validity_to_select()
                         do_select_or_add("select")
                 case "rename":
-                    if check_to_rename("copy"):
+                    if check_to_rename("rename"):
                         do_rename(localization)
-                        input(localization.get_text('press_enter_to_hide'))
                 case "remove":
                     do_remove(localization)
-                    input(localization.get_text('press_enter_to_hide'))
                 case "copy": 
                     do_copy(localization)
-                    input(localization.get_text('press_enter_to_hide'))
                 case "move":
                     do_move(localization)
-                    input(localization.get_text('press_enter_to_hide'))
                 case "up":
                     if check_to_up():
                         go_up()
@@ -1616,7 +1642,6 @@ if __name__ == "__main__":
                 case "copyrename":
                     if check_to_rename("copyrename"):
                         do_copyrename(localization)
-                        input(localization.get_text('press_enter_to_hide'))
                 case "unselect":
                     type_select = "unselect"
                     if check_to_select():
