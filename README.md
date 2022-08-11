@@ -79,10 +79,12 @@ This is the list of commands:
  - saveconfig
  - sizeunit
 
-## Perfomance, code, dependencies and copyright notice
+## Perfomance, code, dependencies, compiling and copyright notice
 The application was coded in quite a "naive" way in Python, so its perfomance is its worst aspect, in most of the cases the application is capable of providing realtime updates but if you use it for handling larger file or folder sets its perfomance quickly degrades.
 
 The application utilizes Python of version 3.10 - exported on version 3.10.6, it also utilizes the Rich library of version 12.5.1. For exporting and compiling Pyinstaller is used of version 5.3, for release file compression UPX is used of version 3.96 and for any additional zip archives 7-Zip 22.01 is utilized.
+
+If you wish to compile the applicatin with Pyinstaller you may use this command - `pyinstaller leek.py --onefile --hidden-import rich --hidden-import datetime --hidden-import operator --hidden-import shutil --hidden-import os --hidden-import stat --hidden-import pathlib --hidden-import configuration --hidden-import localization`.
 
 I would like to express many thanks to all the contributors and creators of the programs and libraries which were or are used during the development of this application.
 
