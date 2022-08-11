@@ -10,6 +10,7 @@
 
 # IMPORTY ##########################################
 import os
+import stat
 import pathlib
 import shutil
 import operator
@@ -27,11 +28,11 @@ from localization import Localization
 ####################################################
 
 class CFG:
-    VERSION = "1.2.1"
+    VERSION = "1.3.1"
     AUTHOR = "Otakar Kočí"
-    DATE = "08/08/2022"
-    WEBPAGE = ""
-    GITHUB = ""
+    DATE = "11/08/2022"
+    WEBPAGE = "http://www.otakarkoci.funsite.cz/leek/"
+    GITHUB = "https://github.com/Otas02CZ/leek"
     PYTHON_VERSION = "3.10 (3.10.6)"
     RICH_VERSION = "12.5.1"
     PYINSTALLER_VERSION = "5.3"
@@ -194,7 +195,7 @@ def get_info_about_file(location) -> os.stat_result:
     """
     
     try:
-        return os.stat(location)
+        return os.lstat(location)
     except:
         return False
 
@@ -720,6 +721,10 @@ def print_sortinfo(cfg : Configuration, localization : Localization):
             if cfg.get_cfg('sort_direction')=="down":
                 rprint(localization.get_text('changed_down'))
 
+def file_permissions(int_rep : int) -> str:
+    oct_rep = oct(stat.S_IMODE(int_rep))
+    return str(oct_rep)
+
 def create_table(cfg : Configuration, localization : Localization):
     r"""
     Vytvoří tabulkový list pro zobrazení z funkce main
@@ -740,9 +745,9 @@ def create_table(cfg : Configuration, localization : Localization):
     else:
         for i in range(len(visible)):
             if os.path.isdir(location + "\\" + visible[i]["name"]):
-                table.add_row(str(visible[i]["id"]), visible[i]["name"], "-", timedate(visible[i]["created"]), timedate(visible[i]["changed"]), str(visible[i]["rights"]))
+                table.add_row(str(visible[i]["id"]), visible[i]["name"], "-", timedate(visible[i]["created"]), timedate(visible[i]["changed"]), file_permissions(visible[i]["rights"]))
             else:
-                table.add_row(str(visible[i]["id"]), visible[i]["name"], str(visible[i]["size"]/size_divider(cfg)), timedate(visible[i]["created"]), timedate(visible[i]["changed"]), str(visible[i]["rights"]))
+                table.add_row(str(visible[i]["id"]), visible[i]["name"], str(size_correct_unit(cfg, visible[i]["size"])), timedate(visible[i]["created"]), timedate(visible[i]["changed"]), str(visible[i]["rights"]))
 
 def get_file_record_as_dictionary(files, i):
     r"""
@@ -1551,13 +1556,17 @@ def refresh_all(cfg : Configuration):
     create_viewable(cfg)
     create_visible(cfg)
 
-def size_divider(cfg : Configuration) -> int:
+def size_correct_unit(cfg : Configuration, size_value : int) -> int:
+    new_size = 0
     match cfg.get_cfg('size_unit'):
-        case 'B' : return 1
-        case 'KB': return 1000
-        case "MB": return 1000000
-        case "GB": return 1000000000
-        case "TB": return 1000000000000
+        case "B" : new_size = size_value
+        case 'KB': new_size = size_value/1000
+        case "MB": new_size = size_value/1000000
+        case "GB": new_size = size_value/1000000000
+        case "TB": new_size = size_value/1000000000000
+    if new_size<0.0001:
+        new_size = 0
+    return new_size
 
 def print_info_error_message(cfg : Configuration, localization : Localization, error_keys : list, info_keys : list):
     for error_key in error_keys:
@@ -1569,7 +1578,7 @@ def print_info_error_message(cfg : Configuration, localization : Localization, e
     for info_key in info_keys:
         match info_key:
             case 'dirsize_success':
-                rprint(localization.get_text(info_key).format(to_open, int(dirsize/size_divider(cfg)), cfg.get_cfg('size_unit')))
+                rprint(localization.get_text(info_key).format(to_open, size_correct_unit(cfg, dirsize), cfg.get_cfg('size_unit')))
             case 'remove_successful':
                 rprint(localization.get_text(info_key).format(successful, failed))
             case 'copy_successful':
@@ -1631,7 +1640,7 @@ if __name__ == "__main__":
                         go_up()
                 case "search":
                     if check_to_search():
-                        do_search()
+                        do_search(localization)
                 case "sort": 
                     check_and_set_sort(config)
                 case "showselect": 

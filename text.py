@@ -305,6 +305,7 @@ Leek (pórek) je jednoduchý konzolový správce souborů ovládaný krátkými 
    - Nastaví jednotku velikosti dat v rámci celého programu
    - new_unit - B/KB/MB/GB/TB, příklady parametrů ->
      - sizeunit KB |-> nastaví jednotku zobrazování velikosti dat na KB
+   - Jakýkoli jiný vstup něžli B/KB/MB/GB/TB je považován za chybu.
    - V případě zadání špatných parametrů funkce vypíše chybové hlášení.   
             ''',
         'app_help_leek_title' : 'Vítejte v podpoře programu Leek (no leak)',
@@ -470,8 +471,8 @@ Leek (pórek) je jednoduchý konzolový správce souborů ovládaný krátkými 
 [bold yellow]Github webpage: [/bold yellow][bold green]{}[/bold green]
 [bold red]This program uses Python {} and Rich {}[/bold red]
 [bold magenta]Exe packaging provided by Pyinstaller {}[/bold magenta]
-[bold blue]Exe file comprimation provided by UPX {}[/bold blue]
-[bold green]ZIP archive comprimation provided by 7-zip {}[/bold green]
+[bold blue]Exe file compression provided by UPX {}[/bold blue]
+[bold green]ZIP archive compression provided by 7-zip {}[/bold green]
 [bold blue]Many thanks to everybody, whose work I use in this project :smiley:[/bold blue]
 [bold magenta]If you have a feature idea or request or you
 have found any bugs please visit the github page of the
@@ -573,53 +574,57 @@ Leek is a simple console file manager controled by short entered commands. As ev
    - new_name - main part of the name or write |none| to leave it empty (or the new_name if there is only one item to be renamed), where - after/before - where to position the counter relative to new_name.
    - counter_begin - the number to start the counter with, counter_increment - the number that will be added to the counter with each item, minimal_number_of_digits - the minimal number of digits to be always shown, use 0 if you want the number to fit the counter.
    - extension - the ending part of the name of the file or the extension of the file, |none| - no extension, |base| - the current extension will be reused.
-   - It prints out the information about what is being changed to what and the when the work is done it informs about the result of the command, possible input ->
+   - It prints out the information about what is being changed to what and when the work is done it informs about the result of the command, possible input ->
      - rename hi.txt |-> only one file to be renamed - it will be renamed to the specified name
      - rename picture after 0 1 4 |base| |-> all the selected items will be renamed like this nice_wall.jpg -> picture0001.jpg, nice_wall_2.png -> picture0002.png, ......
  - [bold blue]copyrename !nový_název (compulsory parameter)! [!kde začátek_počítadla změna_počítadla minimální_počet_míst přípona_nebo_koncovka (polopovinné parametry)!][/bold blue]
-   - Zkopíruje a přejmenuje vybraný soubor či složku, nebo vybrané soubory či složky. Kopíruje a přejmenovává položky v seznamu poznačených do aktuálního adresáře.
-   - Pokud je pouze jedna položka ke kopírování a přejmenování je compulsory parameter pouze nový_název, jinak jsou povinné i další parametry.
-   - nový_název - jedna část názvu, kde - after/before - pozice počítadla před či za novým_názvem, začátek_počítadla - startovní index
-   - změna_počítadla - o jaké number se bude počítadlo pravidelně měnit, minimální_počet_míst - minimální počet míst počítadla, přípona_nebo_koncovka - název připojený ke konci nového názvu
-   - Zjistí počet chybných a úspěšných kopírování a přejmenování a vypíše výsledek příkazu a zda nedošlo k chybě, príklady parametrů ->
-     - copyrename ahoj.txt |-> pokud pouze jeden soubor je vybrán tak bude kopírován do aktuálního adresáře a přejmenován na název ahoj.txt
-     - copyrename obrazek after 0 1 4 .jpg |-> všechny položky které jsou poznačené budou zkopírovány do aktuálního adresáře a přejmenovány takto - obrazek0000.jpg, obrazek0001.jpg, ..........
- - [bold blue]search !hledaný_výraz (compulsory parameter)![/bold blue]
-   - Vyhledá soubory či složky obsahující hledaný_výraz v aktuálním umístění a v jeho podadresářích
-   - Průběžně informuje o vyhledávání, má kontrolu vstupu uživatele. Jako výsledek zobrazí seznam nalezených položek, příklady parametrů ->
-   - search .txt |-> vyhledá všechny soubory v aktuálním adresáři a i v podadresářích obsahující .txt.
+   - Copy-renames the selected file or folder, or the selected files or folders to the current directory. 
+   - Use only one parameter if there is only one item to be copy-renamed, otherwise you have to input the other parametres as well.
+   - new_name - main part of the name or write |none| to leave it empty (or the new_name if there is only one item to be copy-renamed), where - after/before - where to position the counter relative to new_name.
+   - counter_begin - the number to start the counter with, counter_increment - the number that will be added to the counter with each item, minimal_number_of_digits - the minimal number of digits to be always shown, use 0 if you want the number to fit the counter.
+   - extension - the ending part of the name of the file or the extension of the file, |none| - no extension, |base| - the current extension will be reused.
+   - It prints out the information about what is being changed to what and when the work is done it informs about the result of the command, possible input ->
+     - copyrename hi.txt |-> only one file to be copy-renamed - it will be copied to the current directory and renamed to the specified name
+     - copyrename picture after 0 1 4 |base| |-> all the selected items will be copy-renamed like this nice_wall.jpg -> picture0001.jpg, nice_wall_2.png -> picture0002.png, ...... 
+ - [bold blue]search !searched_term (compulsory parameter)![/bold blue]
+   - Searches for items - files and folders with the searched term in their name in the current directory and subdirectories.
+   - It regurarly informs about the search, you can\'t stop the command while it\'s processing, you have to close the program, possible input ->
+   - search .txt |-> searches for files and folders in the current directory and it\'s subdirectories with term .txt in it\'s name
  - [bold blue]dirsize !number (compulsory parameter)![/bold blue]
-   - Zjistí a vypíše velikost zadané složky, příklady parametrů ->
-     - dirsize 6  |-> zjistí a vypíše velikost adresáře na indexu number 6.
- - [bold blue]sort !dle_čeho_má_řadit vzestupně_sestupně (compulsory parameter)![/bold blue]
-   - Nastaví jakým způsobem se řadí a zobrazují zobrazené položky
-   - dle_čeho_se_má_řadit - řazení dle jména - name, výchozí zobrazení - none, dle velikosti - size, dle času založení - created, dle času poslední úpravy - changed
-   - vzestupně_sestupně - vzestupně - up, sestupně - down, příklady parametrů ->
-     - sort name down - seřadí sestupně dle jmen. 
+   - Prints out the size of the specified folder (folder with the given ID), possible input ->
+     - dirsize 6  |-> prints the size of the folder with ID 6
+   - It raises an error in case of bad input or bad ID or prints a success message.
+ - [bold blue]sort !sort_by asc_desc (compulsory parameter)![/bold blue]
+   - Sets in which order the items are viewed.
+   - sort_by - by name - name, by nothing - none, by size - size, by time of creation - created, by time of last change - changed
+   - asc_desc - ascending - up, descending - down, possible input ->
+     - sort name down - sorts by name in descending order 
  - [bold blue]locales[/bold blue]
-   - Zobrazí seznam všech dostupných vestavěných lokalizací a pokud máte povolené ukládání konfigurací, tak i všech dodatkových lokalizací.
-   - Dodatkové lokalizace se mohou vložit do adresáře %APPDATA%(Roaming)/Leek/locales/ a to ve formátu jednotlivých dodatečných jazyků uložených
-   - jako python dictionary ve tvaru {"locale_name" : {locale keys and data}} v souboru s názvem locale_name a příponou .llf - en.llf
-   - Program nekontroluje správnost tvaru dodatkových lokalizací !!!!!!
-   - Pro více informací navštivte projektové stránky programu.
+   - Prints a list of all builtin localizations as well as installed additional ones if the saveconfig is set to true.
+   - Additional localizations can be install to directory %APPDATA%(Roaming)/Leek/locales/. For each additional locale the format is
+   - a text version of python dictionary in this format {"locale_name" : {locale keys and data}} in a file with name locale_name and extension .llf - en.llf
+   - The correct format of the installed additional localizations is not checked !!!!!!
+   - Please visit the project webpage for more information.
  - [bold blue]locale !locale_name (compulsory parameter)![/bold blue]
-   - Změní lokalizaci programu do uvedeného jazyka, příklady parametrů ->
-     - locale en |-> změní lokalizaci do jazyka se zkratkou en
-   - V případě chybného zavolání, nebo zadání neexistující jazyka vypíše chybu.
+   - Application localization (language) will be changed to the selected language, possible input ->
+     - locale en |-> localization will be changed to a language with shortcut en
+   - The application raises an error in case of faulty input or when the specified locale is not supported (view locales), otherwise it informs about success.
 - [bold blue]saveconfig !setting (compulsory parameter)![/bold blue]
-   - Nastaví zda se může ukládat nastavení programu pro použití při příštím startu, zapnutí zároveň umožňuje používat dodatečné lokalizace.
-   - setting - true/false, program vždy ukládá nastavení při zavření pomocí příkazu exit, příklady parametrů ->
-     - saveconfig true |-> nastavení se budou ukládat, dodatečné lokalizace jsou povoleny
-   - V případě špatného vstupu funkce vypíše chybové hlášení.
+   - Sets whether the application is alowed to save configuration for future use, if its turned on you can also use the additional localizations.
+   - setting - true/false, configuration is always saved upon exit, possible input ->
+     - saveconfig true |-> configuration will be saved from now on when you exit the application, additional localizations are alowed.
+   - Confirutation is saved upon using command exit and when closing the window.
+   - The program raises an error in case of bad input, it also outputs stats message.
 - [bold blue]sizeunit !new_unit (compulsory parameter)![/bold blue]
-   - Nastaví jednotku velikosti dat v rámci celého programu
-   - new_unit - B/KB/MB/GB/TB, příklady parametrů ->
-     - sizeunit KB |-> nastaví jednotku zobrazování velikosti dat na KB
-   - V případě zadání špatných parametrů funkce vypíše chybové hlášení.   
+   - Sets the unit of size for the scope of the whole application
+   - new_unit - B/KB/MB/GB/TB, possible input ->
+     - sizeunit KB |-> sets the unit of size to KB
+   - Any other input than B/KB/MB/GB/TB will be ignored and considered as an error.
+   - The command outputs error or success messgage depending on the result.
             ''',
-        'app_help_leek_title' : 'Vítejte v podpoře programu Leek (no leak)',
-        'app_help_command_list_leek_title' : 'Seznam příkazů a vysvětlení',
-        'app_help_basic_title' : 'Základní informace',
+        'app_help_leek_title' : 'Welcome, this is the support page of leek (no leak)',
+        'app_help_command_list_leek_title' : 'List of commands and their description',
+        'app_help_basic_title' : 'General information',
         '' : '',
         '' : '',
         '' : '',

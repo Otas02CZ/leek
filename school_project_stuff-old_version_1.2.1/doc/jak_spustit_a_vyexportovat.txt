@@ -1,0 +1,9 @@
+Pro spuštění je třeba:
+ - Python 3.10				 - https://www.python.org/ftp/python/3.10.2/python-3.10.2-amd64.exe
+ - Rich 11.2 a jeho závislosti	 - pokud jste nechali nainstalovat jako součást pythonu i pip tak zadáním v konzoli pip install rich
+Pokud něco nefunguje tak je potřeba přidat cestu k pythonu a aplikacím do path ve windows
+
+Pro zabalení jako .exe
+ - Pyinstaller - pokud jste nechali nainstalovat jako součást pythonu i pip tak zadáním v konzoli pip install pyinstaller
+ poté v adresáři kde je leek.py zadejte v konzoli 
+	pyinstaller leek.py --onefile --hidden-import rich --hidden-import datetime --hidden-import operator --hidden-import shutil --hidden-import os
