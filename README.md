@@ -23,7 +23,7 @@ The format is specified like this:
    - `{ "tag_name" : { "keyword" : "localized_string", ......}}` - example - `{ "en" : { "open_file_success" : "The specified file opened successfuly", ......}}`
 
 You can use the translation templates and create your own translation and if you would like you could contribute with it to the project.
-The only thing you need to do is to translate the localization strings and keep the ammount of {} brackets in the given string.
+The only thing needed is to translate the localization strings and keep the number of {} brackets in the given string.
 Translation templates:
  - [From Czech Translation Template](https://github.com/Otas02CZ/leek/blob/main/making%20locales/cs_localization_temp.llf)
  - [From English Translation Template](https://github.com/Otas02CZ/leek/blob/main/making%20locales/en_localization_temp.llf)
@@ -80,9 +80,9 @@ This is the list of commands:
  - sizeunit
 
 ## Perfomance, code, dependencies, compiling and copyright notice
-The application was coded in quite a "naive" way in Python, so its perfomance is its worst aspect, in most of the cases the application is capable of providing realtime updates but if you use it for handling larger file or folder sets its perfomance quickly degrades.
+The application was coded quite naively in Python, so its perfomance is its worst aspect, in most of the cases the application is capable of providing realtime updates but if you use it for handling larger file or folder sets its perfomance quickly degrades.
 
-The application utilizes Python of version 3.10 - exported on version 3.10.6, it also utilizes the Rich library of version 12.5.1. For exporting and compiling Pyinstaller is used of version 5.3, for release file compression UPX is used of version 3.96 and for any additional zip archives 7-Zip 22.01 is utilized.
+The application utilizes Python 3.10 (exported on version 3.10.6), it also utilizes the Rich library 12.5.1. For exporting and compiling was used Pyinstaller 5.3, for release file compression UPX 3.96 and for any additional zip archives 7-Zip 22.01.
 
 If you wish to compile the applicatin with Pyinstaller you may use this command - `pyinstaller leek.py --onefile --hidden-import rich --hidden-import datetime --hidden-import operator --hidden-import shutil --hidden-import os --hidden-import stat --hidden-import pathlib --hidden-import configuration --hidden-import localization`.
 
