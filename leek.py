@@ -95,8 +95,7 @@ def get_list_of_drives() -> list:
 def get_list_of_files(location) -> list:
     r"""
     Získá seznam souborů a složek v adresáři z argumentu location a vrátí jej v podobě listu.
-    Pokud dojde k chybě vrátí False.
-    
+    Pokud dojde k chybě vrátí False.    
     Arguments:
      - location (string) -> adresář pro získání seznamu souborů a složek
     """
