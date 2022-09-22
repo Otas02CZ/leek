@@ -18,7 +18,7 @@ The current built-in language support consists of:
 In order to switch between languages type `locale language_tag` - example - `locale en`
 If you want to add additional language support you can drop a translation to the `%APPDATA(Roaming)/Leek/locales` in a format of language_tag.llf - example `en.llf`
 The format is specified like this:
- - it is a python dictionary in text form
+ - it is a json file with a special file extension - `.llf`
  - contents of the file should be:
    - `{ "tag_name" : { "keyword" : "localized_string", ......}}` - example - `{ "en" : { "open_file_success" : "The specified file opened successfuly", ......}}`
 
